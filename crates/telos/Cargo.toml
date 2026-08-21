@@ -1,0 +1,34 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/tpt-telos-parser",
+    "crates/tpt-telos-ir",
+    "crates/tpt-telos-verifier",
+    "crates/tpt-telos-router",
+    "crates/tpt-telos-agent",
+    "crates/tpt-telos-codegen",
+    "crates/tpt-telos-lsp",
+    "crates/tpt-telos-cli",
+    "crates/out-telos-wasm",
+    "crates/tpt-telos-sdk",
+    "crates/tpt-telos-prove",
+    "crates/tpt-telos-uir-bridge",
+]
+
+[workspace.package]
+version = "0.2.0"
+edition = "2021"
+rust-version = "1.74"
+license = "MIT OR Apache-2.0"
+authors = ["TPT Solutions"]
+repository = "https://github.com/tpt-solutions/tpt-telos"
+homepage = "https://github.com/tpt-solutions/tpt-telos"
+documentation = "https://docs.rs/tpt-telos"
+keywords = ["verification", "compiler", "transpiler", "smt", "formal-methods"]
+categories = ["compilers", "development-tools", "command-line-utilities"]
+
+[workspace.dev-dependencies]
+proptest = "1"
+
+[profile.release]
+opt-level = 3

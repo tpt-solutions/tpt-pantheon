@@ -1,0 +1,33 @@
+// Cross-module invariant references.
+// Module Core declares an invariant on Counter.
+// Module Operations uses Counter from Core and inherits its invariant.
+
+@boundary(cpu_bound)
+module Core {
+    invariant Counter {
+        v >= 0
+    }
+}
+
+@boundary(cpu_bound)
+module Operations {
+    // This function uses Counter defined in Core module.
+    // The invariant `v >= 0` declared in Core should be checked here.
+    func increment(c: Counter, amount: PositiveInt)
+        requires c.v >= 0
+        ensures c.v == old(c.v) + amount
+    {
+        mutate state {
+            c.v += amount
+        }
+    }
+
+    func double(c: Counter)
+        requires c.v >= 0
+        ensures c.v == old(c.v) * 2
+    {
+        mutate state {
+            c.v += c.v
+        }
+    }
+}

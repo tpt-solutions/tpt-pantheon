@@ -1,0 +1,164 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  test:
+    name: Build & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Test
+        run: cargo test --workspace
+      # Only tpt-telos-parser has zero internal workspace dependencies, so it's the one
+      # crate `cargo publish --dry-run` can check pre-release: for every other crate,
+      # cargo needs to resolve its path-deps' `version` against the *real* crates.io
+      # index, which only succeeds once those sibling crates are actually published
+      # there (see release.yml, which publishes them for real, in dependency order).
+      - name: Verify crates.io packaging (dry run)
+        run: cargo publish -p tpt-telos-parser --dry-run --allow-dirty
+
+  coverage:
+    name: Coverage (cargo llvm-cov)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cargo-llvm-cov
+        uses: taiki197/install-action@cargo-llvm-cov
+      # Generate an lcov report (uploaded as an artifact) and fail the build if
+      # overall line coverage drops below the agreed threshold.
+      #
+      # NOTE: the threshold (75%) is the project's agreed floor. Bump it
+      # upward as test coverage improves; do not lower it to make CI green.
+      - name: Report coverage
+        run: cargo llvm-cov --workspace --lcov --output-path lcov.info
+      - name: Enforce coverage threshold
+        run: cargo llvm-cov --workspace --fail-under-lines 75
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: lcov.info
+
+  wasm:
+    name: WASM build (out-telos-wasm)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: wasm
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Build WASM
+        run: wasm-pack build crates/out-telos-wasm --target web
+
+  feature-matrix:
+    name: Feature matrix (${{ matrix.features }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        features: ["llm", "z3"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: features-${{ matrix.features }}
+      - name: Check (clippy)
+        run: cargo clippy --workspace --all-targets --features ${{ matrix.features }} -- -D warnings
+      - name: Test
+        run: cargo test --workspace --features ${{ matrix.features }}
+
+  msrv:
+    name: Minimum supported Rust version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.74.0
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: msrv
+      - name: Build (MSRV)
+        run: cargo build --workspace
+
+  uir-bridge:
+    name: TPT-UIR prover bridge (cross-repo)
+    # The prover bridge consumes the sibling `tpt-uir` workspace via a relative
+    # path dep. It is built/tested here only when that repo is available; the
+    # job is non-fatal so the main pipeline does not depend on the sibling repo
+    # being present or public in CI.
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out sibling tpt-uir workspace
+        run: git clone --depth 1 https://github.com/tpt-solutions/tpt-uir.git ../../../tpt-uir
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: uir
+      - name: Format
+        run: cargo fmt -p tpt-telos-uir-bridge -- --check
+      - name: Clippy
+        run: cargo clippy -p tpt-telos-uir-bridge --all-targets --features uir -- -D warnings
+      - name: Test (FM engine)
+        run: cargo test -p tpt-telos-uir-bridge --features uir
+      - name: Test (Z3 engine, if available)
+        run: cargo test -p tpt-telos-uir-bridge --features uir,z3
+
+  doc-consistency:
+    name: Documentation consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Check crate count and version labels match Cargo.toml
+        run: |
+          set -euo pipefail
+          version="$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')"
+          echo "workspace version: $version"
+
+          # The grammar header must track the workspace version (v<version>).
+          grep -q "v${version}" crates/tpt-telos-parser/src/grammar.ebnf \
+            || { echo "grammar.ebnf version label is out of sync with Cargo.toml"; exit 1; }
+
+          # Docs must not claim the old crate count.
+          for f in README.md ARCHITECTURE.md CONTRIBUTING.md; do
+            if grep -qi 'eight .*crates' "$f"; then
+              echo "$f still claims eight crates; update the crate table";
+              exit 1
+            fi
+          done
+
+          # Crate count documented in CONTRIBUTING/README should match members.
+          members="$(grep -c 'crates/' Cargo.toml)"
+          echo "workspace members: $members"
+          echo "doc-consistency OK"

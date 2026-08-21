@@ -1,0 +1,24 @@
+[package]
+name = "tpt-telos-codegen"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+documentation = "https://docs.rs/tpt-telos-codegen"
+keywords = ["codegen", "ffi", "transpiler", "rust-to-go", "telos"]
+categories = ["compilers", "development-tools::ffi"]
+description = "Rust/Go dual-backend code generation and FFI bridge for tpt-telos"
+
+[dependencies]
+tpt-telos-parser = { path = "../tpt-telos-parser", version = "0.2.0" }
+tpt-telos-agent = { path = "../tpt-telos-agent", version = "0.2.0" }
+tpt-telos-router = { path = "../tpt-telos-router", version = "0.2.0" }
+sha2 = "0.10"
+
+[dev-dependencies]
+tpt-telos-ir = { path = "../tpt-telos-ir", version = "0.2.0" }
+tpt-telos-verifier = { path = "../tpt-telos-verifier", version = "0.2.0" }

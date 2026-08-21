@@ -1,0 +1,28 @@
+[package]
+name = "tpt-telos-prove"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+description = "Standalone contradiction-checker binary: prove named constraint groups consistent/contradictory without a .telos source file"
+keywords = ["verification", "smt", "formal-methods", "constraints"]
+categories = ["compilers", "development-tools", "command-line-utilities"]
+
+[features]
+default = []
+# Route solving through the Z3 backend.
+z3 = ["tpt-telos-verifier/z3"]
+
+[dependencies]
+# Minimal dep set: solver core + IR types + parser (for LineIndex in the JSON reader).
+tpt-telos-ir = { path = "../tpt-telos-ir", version = "0.2.0" }
+tpt-telos-verifier = { path = "../tpt-telos-verifier", version = "0.2.0" }
+tpt-telos-parser = { path = "../tpt-telos-parser", version = "0.2.0" }
+
+[[bin]]
+name = "telos-prove"
+path = "src/main.rs"

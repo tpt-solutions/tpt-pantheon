@@ -1,0 +1,27 @@
+// Nonlinear interval bounding demonstration.
+// The ensures clause contains `x * y`, which is nonlinear. Both x and y have
+// known bounds from the requires clause, so the verifier over-approximates the
+// product via interval arithmetic and marks the result [interval-bounded].
+//
+// Note: the mutation body is linear (`s.total = x + y`). Interval bounding
+// only applies to conclusions (ensures / invariants), not to mutation premises
+// which must remain in QF_LRA.
+
+module Bounded {
+    invariant State {
+        total >= 0
+    }
+
+    // Prove that a bounded nonlinear product does not exceed its interval bound.
+    func check(s: State, x: Int, y: Int)
+        requires x >= 0
+        requires x <= 10
+        requires y >= 0
+        requires y <= 5
+        ensures x * y <= 50
+    {
+        mutate state {
+            s.total = x + y;
+        }
+    }
+}

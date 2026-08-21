@@ -1,0 +1,52 @@
+// START-HERE.telos — a guided first module.
+//
+// This file is the fastest way to learn the tpt-telos language. Read it top to
+// bottom; every construct used here is explained inline. Then run the commands
+// shown in the comments to see verification, codegen, and the eject hatch.
+//
+// 1. A module is tagged with @boundary(...) to pick a backend.
+//    cpu_bound / zero_allocation / crypto / real_time  -> Rust
+//    network_io / high_concurrency / distributed / high_latency -> Go
+//    ml_training / python / jax -> Python
+@boundary(cpu_bound)
+module Wallet {
+
+    // 2. An invariant is a property that must hold at function entry and after
+    //    every `mutate state` block. Here: a balance is never negative.
+    invariant Account {
+        balance >= 0
+    }
+
+    // 3. A function carries `requires` (pre-condition) and `ensures`
+    //    (post-condition) contracts. `old(e)` refers to the pre-state value.
+    func deposit(acc: Account, amount: Int)
+        requires amount > 0
+        requires acc.balance >= 0
+        ensures acc.balance == old(acc.balance) + amount
+    {
+        // 4. `mutate state` is the only place state changes; the verifier
+        //    checks the ensures clause against the assignments here.
+        mutate state {
+            acc.balance += amount
+        }
+    }
+
+    func withdraw(acc: Account, amount: Int)
+        requires amount > 0
+        requires acc.balance >= amount
+        ensures acc.balance == old(acc.balance) - amount
+    {
+        mutate state {
+            acc.balance -= amount
+        }
+    }
+}
+
+// Try these from the repository root:
+//   telos verify examples/START-HERE.telos
+//   telos verify examples/START-HERE.telos --json
+//   telos build  examples/START-HERE.telos --out-dir ./gen-start
+//   telos transpile examples/START-HERE.telos
+//
+// For a dual-backend (Rust + Go + automatic FFI) example, see microservice.telos.
+// For the eject hatch (hand-tunable trusted blocks), see eject.telos.

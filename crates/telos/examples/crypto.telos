@@ -1,0 +1,35 @@
+// Showcase #4: sensitive / secret state on the crypto backend.
+//
+// @boundary(crypto) routes this module to Rust, the backend chosen for
+// cryptographic and security-critical code. The point of the example is the
+// contract: a secret value carries an invariant (never negative) that must hold
+// before and after every operation, and the verifier proves both `consume` and
+// `refresh` preserve it.
+
+@boundary(crypto)
+module SecretStore {
+    // A secret counter must never underflow below zero.
+    invariant Secret {
+        value >= 0
+    }
+
+    // Spend `amount` from the secret counter.
+    func consume(s: Secret, amount: PositiveInt)
+        requires s.value >= amount
+        ensures s.value == old(s.value) - amount
+    {
+        mutate state {
+            s.value -= amount
+        }
+    }
+
+    // Add `add` to the secret counter.
+    func refresh(s: Secret, add: PositiveInt)
+        requires s.value >= 0
+        ensures s.value == old(s.value) + add
+    {
+        mutate state {
+            s.value += add
+        }
+    }
+}

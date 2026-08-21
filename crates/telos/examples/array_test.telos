@@ -1,0 +1,16 @@
+// Array type support — parsed and codegen'd but no IR length constraints yet.
+module ArrayDemo {
+    invariant Buffer {
+        len >= 0
+    }
+
+    // Fixed-length array parameter — the parser handles [T; N] types.
+    func sum_array(buf: Buffer, data: [Int; 4])
+        requires buf.len >= 0
+        ensures buf.len >= 0
+    {
+        mutate state {
+            buf.len = 4
+        }
+    }
+}

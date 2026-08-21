@@ -1,0 +1,22 @@
+@boundary(cpu_bound)
+module Nested {
+    invariant Counter { value >= 0 }
+
+    // Nested arithmetic in the mutated value (constant multiplication, `old()`
+    // inside the `ensures`), plus `PositiveInt` parameter constraints.
+    func compound(c: Counter, a: PositiveInt, b: PositiveInt)
+        requires c.value >= 0
+        ensures c.value == old(c.value) * 2 + a + b
+    {
+        mutate state {
+            c.value = c.value + c.value + a + b
+        }
+    }
+
+    // `&&` flattening in the `requires` and a scalar equality post-condition.
+    func guarded(x: i64, y: i64)
+        requires x >= 0 && y >= 0
+        ensures y == old(y)
+    {
+    }
+}

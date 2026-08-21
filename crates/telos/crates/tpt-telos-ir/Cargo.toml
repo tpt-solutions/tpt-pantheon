@@ -1,0 +1,20 @@
+[package]
+name = "tpt-telos-ir"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+documentation = "https://docs.rs/tpt-telos-ir"
+keywords = ["ir", "constraint-solving", "smt", "compiler", "telos"]
+categories = ["compilers", "development-tools"]
+description = "Intermediate representation and constraint extraction for tpt-telos"
+
+[dependencies]
+tpt-telos-parser = { path = "../tpt-telos-parser", version = "0.2.0" }
+
+[dev-dependencies]
+proptest = "1"

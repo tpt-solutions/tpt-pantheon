@@ -1,0 +1,60 @@
+{
+  "name": "telos",
+  "displayName": "telos",
+  "description": "Language support for .telos files",
+  "version": "0.1.1",
+  "publisher": "tpt-solutions",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:telos"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "telos",
+        "aliases": [
+          "telos"
+        ],
+        "extensions": [
+          ".telos"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "telos",
+        "scopeName": "source.telos",
+        "path": "./syntaxes/telos.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "telos",
+      "properties": {
+        "telos.serverPath": {
+          "type": "string",
+          "default": "telos",
+          "description": "Path to the telos binary. Defaults to 'telos' (must be on PATH)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "typescript": "^5.0.0"
+  }
+}

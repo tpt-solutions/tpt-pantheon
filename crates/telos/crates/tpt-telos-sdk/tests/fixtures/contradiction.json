@@ -1,0 +1,14 @@
+[
+  {
+    "label": "latency_ok",
+    "constraints": [
+      { "linear": { "terms": [["value", 1]], "constant": -200 }, "relation": "<=" }
+    ]
+  },
+  {
+    "label": "latency_critical",
+    "constraints": [
+      { "linear": { "terms": [["value", 1]], "constant": -500 }, "relation": ">=" }
+    ]
+  }
+]

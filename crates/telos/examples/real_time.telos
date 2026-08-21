@@ -1,0 +1,28 @@
+// Showcase #2: hard-real-time embedded controller.
+//
+// @boundary(real_time, zero_allocation) routes this module to Rust: a
+// deterministic, GC-free backend suitable for control loops and FADEC/avionics
+// style logic. (Routing real_time to Go instead would emit a
+// WARNING [real_time_go_conflict] because Go's GC is non-deterministic.)
+//
+// The verifier proves the actuator stays in its safe integer range across every
+// step, with no branch in the mutated state.
+
+@boundary(real_time, zero_allocation)
+module Controller {
+    // The actuator position is never negative.
+    invariant Actuator {
+        position >= 0
+    }
+
+    // Advance the actuator by `delta`, staying within the safe range [0, 1000].
+    func step(s: Actuator, delta: Int)
+        requires s.position + delta >= 0
+        requires s.position + delta <= 1000
+        ensures s.position == old(s.position) + delta
+    {
+        mutate state {
+            s.position += delta
+        }
+    }
+}

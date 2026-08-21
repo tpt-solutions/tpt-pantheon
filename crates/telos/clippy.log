@@ -1,0 +1,5 @@
+warning: D:\Programming\1PRODUCTION\Open Source\tpt-telos\Cargo.toml: unused manifest key: workspace.dev-dependencies
+    Checking tpt-telos-ir v0.2.0 (D:\Programming\1PRODUCTION\Open Source\tpt-telos\crates\tpt-telos-ir)
+    Checking tpt-telos-sdk v0.2.0 (D:\Programming\1PRODUCTION\Open Source\tpt-telos\crates\tpt-telos-sdk)
+    Checking tpt-telos-lsp v0.2.0 (D:\Programming\1PRODUCTION\Open Source\tpt-telos\crates\tpt-telos-lsp)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.75s

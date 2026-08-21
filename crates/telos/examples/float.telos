@@ -1,0 +1,19 @@
+// Floating-point type support.
+// Float32/Float64 are parsed and codegen'd correctly.
+// The IR currently treats them as integers (QF_LRA); IEEE 754 interval
+// arithmetic and rounding error bounds are tracked as future work.
+
+module FloatDemo {
+    invariant Sensor {
+        reading >= 0
+    }
+
+    func clamp_reading(s: Sensor, min_val: Float64, max_val: Float64)
+        requires s.reading >= 0
+        ensures s.reading >= 0
+    {
+        mutate state {
+            s.reading = s.reading
+        }
+    }
+}

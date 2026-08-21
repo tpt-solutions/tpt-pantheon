@@ -1,0 +1,27 @@
+// Showcase #1: verified financial state machine.
+//
+// The canonical tpt-telos demo: a wallet whose balance can never go negative,
+// with a `transfer` that moves funds and is proven correct via `old(...)`.
+// Run it:
+//   telos verify examples/wallet.telos
+//   telos build  examples/wallet.telos --out-dir ./gen-wallet
+
+@boundary(cpu_bound)
+module PaymentGateway {
+    // A wallet balance can never be negative.
+    invariant Wallet {
+        balance >= 0
+    }
+
+    // Move `amount` from one wallet to another.
+    func transfer(from: Wallet, to: Wallet, amount: PositiveInt)
+        requires from.balance >= amount
+        ensures from.balance == old(from.balance) - amount
+        ensures to.balance == old(to.balance) + amount
+    {
+        mutate state {
+            from.balance -= amount
+            to.balance += amount
+        }
+    }
+}

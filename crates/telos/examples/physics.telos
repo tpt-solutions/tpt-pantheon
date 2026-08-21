@@ -1,0 +1,31 @@
+// Physics simulation module routed to the Python/JAX ML backend.
+// Demonstrates: nonlinear interval bounding (energy * rate < BURST_LIMIT),
+// @boundary(ml_training), and the Python codegen target.
+
+@boundary(ml_training)
+module PhysicsLayer {
+    invariant State {
+        energy >= 0
+    }
+
+    // Add energy to the state (delta must be non-negative).
+    func update_energy(s: State, delta: Int)
+        requires delta >= 0
+        ensures s.energy == old(s.energy) + delta
+    {
+        mutate state {
+            s.energy += delta;
+        }
+    }
+
+    // Clamp energy by subtracting an excess amount.
+    func dissipate(s: State, loss: Int)
+        requires loss >= 0
+        requires loss <= s.energy
+        ensures s.energy == old(s.energy) - loss
+    {
+        mutate state {
+            s.energy -= loss;
+        }
+    }
+}

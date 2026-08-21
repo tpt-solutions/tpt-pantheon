@@ -1,0 +1,28 @@
+// Showcase #5: cryptocurrency conservation.
+//
+// Unlike wallet.telos (which only asserts a single balance stays non-negative),
+// this example enforces *conservation of coins*: the total supply held across
+// two vault legs is an invariant, and a transfer must move value without
+// creating or destroying it. The verifier proves the transfer preserves the
+// `balance_a + balance_b == 1000000` invariant.
+
+@boundary(cpu_bound)
+module Token {
+    // Total supply is conserved: the two legs always sum to the fixed reserve.
+    invariant Vault {
+        balance_a + balance_b == 1000000
+    }
+
+    // Move `amt` from leg A to leg B. Supply is conserved (no mint/burn here).
+    func shift(c: Vault, amt: PositiveInt)
+        requires c.balance_a >= amt
+        requires amt <= c.balance_b
+        ensures c.balance_a == old(c.balance_a) - amt
+        ensures c.balance_b == old(c.balance_b) + amt
+    {
+        mutate state {
+            c.balance_a -= amt
+            c.balance_b += amt
+        }
+    }
+}
