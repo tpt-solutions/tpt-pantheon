@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat /tmp/tpt-email/pkg/tfep/*.go | head -200)",
+      "Bash(ls -la /tmp/tpt-email/pkg/tfep/)",
+      "Bash(head -200 /tmp/tpt-email/internal/trust/*.go 2>/dev/null | head -100)",
+      "Bash(cat /tmp/tpt-email/QUICKSTART.md)",
+      "Bash(xargs grep -l \"DID\\\\|identity\\\\|key\")"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+version: "3.9"
+
+services:
+  tpt-identity:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./keys:/app/keys:ro
+      - tpt-data:/app/data
+    environment:
+      # Override config values via environment — prefix TPT_IDENTITY_
+      TPT_IDENTITY_DB_PATH: /app/data/tpt-identity.db
+      TPT_IDENTITY_LISTEN_ADDR: ":8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  tpt-data:
