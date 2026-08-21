@@ -1,0 +1,9 @@
+[package]
+name = "counter-canvas"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+tpt-appfront-core = { path = "../../crates/tpt-appfront-core" }
+tpt-appfront-canvas = { path = "../../crates/tpt-appfront-canvas" }

@@ -1,0 +1,30 @@
+[package]
+name = "tpt-appfront-cli"
+description = "The tpt-appfront CLI: init/dev/build/generate/benchmark/optimize for TPT AppFront projects."
+readme = "README.md"
+keywords = ["cli", "scaffold", "codegen", "ui", "generator"]
+categories = ["command-line-utilities", "development-tools"]
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "tpt-appfront"
+path = "src/main.rs"
+
+[features]
+## Live-LLM-backed `generate --llm` mode. Off by default so the default install
+## stays network-free; gate the model-provider HTTP deps behind it.
+llm = ["dep:ureq", "dep:serde", "dep:serde_json", "dep:syn"]
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+scraper = "0.23"
+
+# Optional deps, only built when the `llm` feature is enabled.
+ureq = { version = "2", features = ["json"], optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+serde_json = { version = "1", optional = true }
+syn = { version = "2", features = ["full"], optional = true }

@@ -1,0 +1,184 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+# Cancel superseded runs on the same PR/ref so a push to a branch with an
+# in-flight CI run doesn't queue redundant jobs.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fmt:
+    name: Format check (nightly)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt
+      - run: cargo +nightly fmt --all --check
+      # examples/ are excluded from the workspace, so format them explicitly.
+      - name: Check formatting of examples
+        run: |
+          set -e
+          for dir in examples/*/; do
+            if [ -f "$dir/Cargo.toml" ]; then
+              echo "fmt: $dir"
+              (cd "$dir" && cargo +nightly fmt --check)
+            fi
+          done
+
+  doc:
+    name: Docs build (no broken links)
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: "-D warnings"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # tpt-appfront-webview needs webkit2gtk/GTK3 system libs not available on
+      # ubuntu-latest; it is verified locally per AGENTS.md.
+      - run: cargo doc --workspace --no-deps --exclude tpt-appfront-webview
+
+  msrv:
+    name: MSRV build (pinned toolchain)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.85.0
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --workspace --all-targets --exclude tpt-appfront-webview
+
+  native:
+    name: Native (workspace)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      # tpt-appfront-webview needs webkit2gtk/GTK3 system libs not available on
+      # ubuntu-latest; it is verified locally per CLAUDE.md.
+      - run: cargo build --workspace --all-targets --exclude tpt-appfront-webview
+      - run: cargo test --workspace --exclude tpt-appfront-webview
+      - run: cargo clippy --workspace --all-targets --exclude tpt-appfront-webview -- -D warnings
+
+  wasm:
+    name: WASM (browser backends)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build -p tpt-appfront-dom -p tpt-appfront-canvas --target wasm32-unknown-unknown
+      - run: cargo clippy -p tpt-appfront-dom -p tpt-appfront-canvas --target wasm32-unknown-unknown --all-targets -- -D warnings
+
+  wasm-tests:
+    name: WASM browser tests (wasm-bindgen-test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Install headless browser + wasm-bindgen-test-runner
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y chromium
+          cargo install wasm-bindgen-test-runner
+      - name: Build & run tpt-appfront-dom browser tests
+        env:
+          WASM_BINDGEN_TEST_RUNNER_CHROME: /usr/bin/chromium
+        run: |
+          set -e
+          cargo test -p tpt-appfront-dom --target wasm32-unknown-unknown --no-run
+          wasm-bindgen-test-runner target/wasm32-unknown-unknown/debug/deps/tpt_appfront_dom-*.wasm
+
+  cli-llm:
+    name: CLI `llm` feature (clippy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      # The `llm` feature pulls in network/model-provider deps (ureq, serde,
+      # syn). Lint it explicitly so that path can't bit-rot without needing
+      # network access in CI (the tests are network-free — see llm/mod.rs).
+      - run: cargo clippy -p tpt-appfront-cli --all-targets --features llm -- -D warnings
+
+  audit:
+    name: Dependency vulnerability scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@cargo-audit
+      # RUSTSEC-2026-0194/0195: quick-xml DoS reachable only via wayland-scanner
+      # build dep parsing trusted Wayland protocol .xml files, not runtime input.
+      - run: cargo audit --ignore RUSTSEC-2026-0194 --ignore RUSTSEC-2026-0195
+
+  deny:
+    name: License / duplicate-version check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@cargo-deny
+      - run: cargo deny check
+
+  examples:
+    name: Examples (trunk build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - uses: jetli/trunk-action@v0.5.0
+        with:
+          version: "latest"
+      - name: Build every example under examples/*/index.html
+        run: |
+          set -e
+          for dir in examples/*/; do
+            if [ -f "$dir/index.html" ]; then
+              echo "Building $dir"
+              (cd "$dir" && trunk build)
+            fi
+          done
+      - name: Build native (non-trunk) examples
+        run: |
+          set -e
+          for dir in examples/*/; do
+            if [ -f "$dir/Cargo.toml" ] && [ ! -f "$dir/index.html" ]; then
+              # The webview host compiles against `wry`, which needs system
+              # webview libraries (webkit2gtk on Linux) plus a pre-built
+              # `ui/dist` produced by `trunk`. It is verified locally instead
+              # of in this job to keep the runner image lean.
+              if [ -f "$dir/ui/index.html" ]; then
+                echo "Skipping webview example $dir (needs system webview libs + trunk build)"
+                continue
+              fi
+              echo "Building native example $dir"
+              (cd "$dir" && cargo build)
+            fi
+          done

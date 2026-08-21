@@ -1,0 +1,32 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/tpt-appfront-core",
+    "crates/tpt-appfront-dom",
+    "crates/tpt-appfront-canvas",
+    "crates/tpt-appfront-html",
+    "crates/tpt-appfront-ai-schema",
+    "crates/tpt-appfront-macros",
+    "crates/tpt-appfront-cli",
+    "crates/tpt-appfront-server",
+    "crates/tpt-appfront-mcp",
+    "crates/tpt-appfront-tui",
+    "crates/tpt-appfront-webview",
+    "crates/tpt-appfront-templates",
+]
+exclude = ["examples"]
+
+[workspace.package]
+version = "0.1.1"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/tpt-solutions/tpt-appfront"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+
+[profile.dev]
+debug = "line-tables-only"
