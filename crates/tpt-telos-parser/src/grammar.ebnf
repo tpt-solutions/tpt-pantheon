@@ -1,0 +1,264 @@
+Formal Grammar for tpt-telos (v0.1.1)
+=======================================
+
+--------------------------------------------------------------------------------
+Language Feature Matrix
+--------------------------------------------------------------------------------
+
+SUPPORTED (verifier + all backends):
+  Arithmetic operators    +  -  *  /  (unary -)
+  Comparison operators    ==  !=  <  <=  >  >=
+  Logical conjunction     &&  (in requires/ensures)
+  Logical disjunction     ||  (via DNF normalization)
+  Post-conditions         ensures e        (provable from requires + mutations)
+  Pre-conditions          requires e       (assumed true in pre-state)
+  Pre-state reference     old(expr)        (e.g. old(w.balance))
+  Mutation block          mutate state { target (= | += | -=) expr; }
+  Field paths             e.g. wallet.balance, s.pressure
+  Invariant types         invariant T { constraint }  (checked at entry + post-mutate)
+  Refinement type         PositiveInt      (built-in; treated as Int with balance >= 0 premise)
+  Module attributes       @boundary(...)   (routing), @state(...)  (storage class: persistent|ephemeral)
+  Function attributes     @eject           (compile as trusted opaque + contract guard)
+  Routing flags           cpu_bound  zero_allocation  crypto  real_time      → Rust
+                          network_io  high_concurrency  distributed  high_latency → Go
+                          ml_training  python  jax                            → Python
+  Nonlinear contracts     x * y < K        (verified via interval bounding when bounds present;
+                                            marked [interval-bounded] in output)
+  Float types             Float32/Float64  (IEEE 754 interval arithmetic in IR)
+  Bounded quantifiers     forall i in lo..hi { body }  (unrolled to conjunctions)
+  Aggregate expressions   sum/count over bounded ranges
+  Modular verification    Call/MethodCall resolved via callee ensures
+  Array/slice contracts   Constant-index access in contracts
+
+NEW IN v0.2.0 (koinon feature set):
+  Return types            func f(x: T) -> Result<T, E>  (generic return types)
+  Let bindings            let x [: Type] = expr;
+  Function calls          func_name(args) in expressions
+  Method calls            receiver.method(args)
+  Quantified invariants   forall x: Type in lo..hi { body }  (bounded range unrolling)
+  Aggregate expressions   sum/count over bounded ranges
+  Mutable parameters      mut sender: Account
+  Control flow            if expr { stmts } [else { stmts }]
+                          if expr { expr } else { expr }  (expression form)
+                          match expr { pattern => expr, ... }
+  Struct definitions      struct Name { field: Type, ... }
+  Enum definitions        enum Name { Variant { field: Type }, Variant2, ... }
+  Error propagation       expr?
+  Patterns                literal | var | Constructor(fields...) | _
+  Range expressions       lo..hi  (exclusive upper bound, for forall/aggregate domains)
+  Modular verification    Call/MethodCall resolved via callee ensures substitution
+  Constant-index arrays   arr[constant] in contracts
+
+PARTIAL / LIMITED:
+  Logical disjunction     ||  parsed; DNF normalization for requires (splits into sub-problems);
+                                DNF for ensures with or_group tracking (at least one branch must hold)
+  @state(...) semantics   parsed and forwarded to router; storage-class behavior enforced
+                                (persistent → serde/JSON tags; ephemeral → stack-only)
+  Floating-point types    Float32/Float64 parsed and codegen'd to f32/f64 (Rust) and
+                                float32/float64 (Go); IR tracks as integer constraints
+  Quantifier verification forall is parsed and codegen'd to runtime checks; no formal verification
+  Modular verification    Call/MethodCall resolved via callee ensures substitution
+  Array/slice contracts   Constant-index access (arr[0]) in contracts; symbolic indices rejected
+
+UNSUPPORTED (parse error or silent drop):
+  Strings / booleans      no string or bool literal types
+  Symbolic array indices  non-constant index in contracts rejected
+  Array length invariants  arrays parsed ([T; N]) but no IR length/index constraint extraction
+  Cross-module refs       invariant types resolve across modules (global invariant lookup works)
+                                but no explicit cross-module type reference syntax
+
+--------------------------------------------------------------------------------
+
+Notation: EBNF. `{ ... }*` zero-or-more, `{ ... }+` one-or-more,
+`[ ... ]` optional, `( ... )` grouping. `//` introduces a comment.
+
+--------------------------------------------------------------------------------
+Program
+--------------------------------------------------------------------------------
+
+program        ::= module*
+
+module         ::= attribute* "module" IDENT "{" item* "}"
+
+attribute      ::= "@" IDENT [ "(" arglist? ")" ]
+
+arglist        ::= arg ( "," arg )*
+
+arg            ::= IDENT                      // flag, e.g. cpu_bound
+                 | IDENT "=" literal          // key/value, e.g. replication_factor = 3
+
+literal        ::= INT | IDENT
+
+--------------------------------------------------------------------------------
+Items
+--------------------------------------------------------------------------------
+
+item           ::= invariant
+                 | func
+                 | struct_def
+                 | enum_def
+
+invariant      ::= "invariant" IDENT "{"
+                       constraint ( ";" constraint )* ";"?
+                   "}"
+
+func           ::= "func" IDENT "(" params? ")" [ "->" type ]
+                       clause*
+                       block | ";"
+
+struct_def     ::= "struct" IDENT "{"
+                       field_def ( "," field_def )* ","?
+                   "}"
+
+enum_def       ::= "enum" IDENT "{"
+                       variant_def ( "," variant_def )* ","?
+                   "}"
+
+variant_def    ::= IDENT [ "{" field_def ( "," field_def )* ","? "}" ]
+
+field_def      ::= IDENT ":" type
+
+params         ::= param ( "," param )*
+
+param          ::= [ "mut" ] IDENT ":" type
+
+clause         ::= "requires" constraint
+                 | "ensures"  constraint
+
+block          ::= "{" stmt* "}"
+
+--------------------------------------------------------------------------------
+Statements
+--------------------------------------------------------------------------------
+
+stmt           ::= "mutate" "state" "{" assign* "}"
+                 | "let" IDENT [ ":" type ] "=" expr ";"
+                 | if_stmt
+                 | "match" expr "{" match_arm_stmt* "}"
+                 | "return" [ expr ] ";"
+                 | assign
+                 | expr "=" expr ";"
+                 | expr "+=" expr ";"
+                 | expr "-=" expr ";"
+                 | expr ";"               // expression statement
+
+if_stmt        ::= "if" expr "{" stmt* "}" [ "else" "{" stmt* "}" ]
+
+match_arm_stmt ::= pattern "=>" "{" stmt* "}"
+                 | pattern "=>" stmt
+
+assign         ::= target ( "=" | "+=" | "-=" ) expr ";"
+
+target         ::= expr        // must resolve to a field path, e.g. from.balance
+
+--------------------------------------------------------------------------------
+Patterns
+--------------------------------------------------------------------------------
+
+pattern        ::= INT
+                 | "-" INT
+                 | IDENT [ "(" pattern ( "," pattern )* ")" ]
+                 | "_"
+
+--------------------------------------------------------------------------------
+Types
+--------------------------------------------------------------------------------
+
+type           ::= IDENT                            // Named type
+                 | IDENT "<" type ( "," type )* ">"  // Generic type (e.g. Result<T, E>)
+                 | "(" type ( "," type )+ ")"        // Tuple type
+
+--------------------------------------------------------------------------------
+Expressions
+--------------------------------------------------------------------------------
+
+constraint     ::= expr                // a boolean expression (see below)
+
+expr           ::= orExpr
+
+orExpr         ::= andExpr ( "||" andExpr )*
+
+andExpr        ::= cmpExpr ( "&&" cmpExpr )*
+
+cmpExpr        ::= addExpr [ cmpOp addExpr ]      // single comparison
+
+cmpOp          ::= "==" | "!=" | "<" | "<=" | ">" | ">="
+
+addExpr        ::= mulExpr ( ( "+" | "-" ) mulExpr )*
+
+mulExpr        ::= postfix ( ( "*" | "/" ) postfix )*
+
+postfix        ::= primary
+                 | postfix "(" arglist? ")"        // function / method call
+                 | postfix "." IDENT               // field access / method
+                 | postfix "[" expr "]"            // index
+                 | postfix "?"                     // try / error propagation
+
+primary        ::= INT
+                 | "old" "(" expr ")"
+                 | IDENT [ "." IDENT ]             // var or field path
+                 | "(" expr ")"
+                 | if_expr
+                 | match_expr
+                 | "forall" IDENT ":" type [ "in" expr ] "{" expr "}"
+                 | aggregate_call
+                 | "Ok" "(" expr ")"
+                 | "Err" "(" expr ")"
+
+if_expr        ::= "if" expr "{" expr "}" "else" "{" expr "}"
+
+match_expr     ::= "match" expr "{"
+                       ( pattern "=>" expr ","? )*
+                   "}"
+
+aggregate_call ::= ( "sum" | "min" | "max" | "count" ) "(" arglist? ")"
+
+arglist        ::= expr ( "," expr )*
+
+--------------------------------------------------------------------------------
+Lexical rules
+--------------------------------------------------------------------------------
+
+IDENT          ::= ( ASCII_LETTER | "_" ) ( ASCII_ALNUM | "_" )*
+INT            ::= [ "-" ] DIGIT+               // (lexer emits separate '-' token)
+COMMENT        ::= "//" ... end-of-line
+WS             ::= " " | "\t" | "\n" | "\r"
+
+--------------------------------------------------------------------------------
+Semantics (summary)
+--------------------------------------------------------------------------------
+
+* `@boundary(...)` and `@state(...)` are architectural metadata consumed by the
+  context router (Phase 2+). They are parsed but not verified in Phase 1.
+
+* `invariant T { c }` declares that constraint `c` must hold for every value of
+  type `T` -- at function entry (pre-state) and after every mutation (post-state).
+
+* `requires e` are pre-conditions: assumed true in the pre-state.
+* `ensures  e` are post-conditions: must be provable in the post-state given the
+  `requires` clauses and the `mutate state` assignments.
+
+* `old(e)` refers to the value of `e` in the pre-state.
+
+* `func f(x: T) -> Result<T, E>` declares a function with a generic return type.
+  The `?` operator desugars to match/return for error propagation.
+
+* `let x = e;` introduces a local binding; in IR this becomes `x == e`.
+
+* `func_name(args)` in an expression context calls a function. When used in
+  specifications, the call is substituted with the function's postconditions.
+
+* `forall x: T { body }` is a universal quantifier. Currently codegen'd to
+  runtime assertion loops; no formal verification.
+
+* `sum(xs)`, `min(a, b)`, `max(a, b)`, `count(xs)` are aggregate expressions.
+
+* `mut param: T` marks a parameter as mutable (passed by reference).
+
+* `struct Name { field: Type }` and `enum Name { Variant { ... } }` declare
+  named types. Inference also discovers types from field accesses.
+
+* `match expr { pattern => expr }` performs pattern matching. Exhaustiveness
+  is not enforced by the parser (a `_` wildcard is recommended).
+
+* No implicit type coercion and no hidden allocation: every operation is named.

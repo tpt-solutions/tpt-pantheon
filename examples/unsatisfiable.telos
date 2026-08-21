@@ -1,0 +1,13 @@
+// Two postconditions on the same field that cannot both hold. Used by the SDK
+// integration test to deterministically exercise the "verification permanently
+// fails" path — unlike broken.telos, whose buggy body the agentic loop repairs.
+module M {
+    invariant Counter { v >= 0 }
+
+    func f(c: Counter)
+        ensures c.v == 0
+        ensures c.v == 1
+    {
+        mutate state { c.v = 0 }
+    }
+}

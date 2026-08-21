@@ -1,0 +1,41 @@
+// Quota Tracker — resource usage stays within a fixed budget.
+//
+// Equality substitution lets the solver prove `usage <= quota` by substituting
+// `usage = old(usage) + request` and combining with `old(usage) + request <= quota`.
+//
+// Verified: `telos verify examples/quota.telos`
+
+@boundary(distributed, high_latency)
+@state(persistent)
+module QuotaTracker {
+    invariant Account {
+        usage >= 0
+        limit > 0
+        usage <= limit
+    }
+
+    func charge(mut account: Account, amount: i64) -> i64
+        requires amount > 0
+        requires account.usage + amount <= account.limit
+        ensures account.usage == old(account.usage) + amount
+        ensures account.usage >= 0
+        ensures account.usage <= account.limit
+    {
+        mutate state {
+            account.usage = old(account.usage) + amount;
+        }
+        account.usage
+    }
+
+    func reset(mut account: Account)
+        requires account.usage > 0
+        ensures account.usage == 0
+        ensures account.usage >= 0
+        ensures account.usage <= account.limit
+    {
+        mutate state {
+            account.usage = 0;
+        }
+    }
+
+}

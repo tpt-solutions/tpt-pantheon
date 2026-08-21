@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>tpt-telos Playground</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>tpt-telos Playground</h1>
+      <p class="subtitle">
+        Write <code>.telos</code> source and verify its mathematical contracts
+        in your browser. Powered by <code>out-telos-wasm</code> (the parser +
+        SMT-style verifier compiled to WebAssembly).
+      </p>
+    </header>
+
+    <main>
+      <section class="editor-pane">
+        <div class="toolbar">
+          <button id="verify-btn">Verify</button>
+          <button id="parse-btn">Parse</button>
+          <span id="status" class="status"></span>
+        </div>
+        <textarea id="source" spellcheck="false"></textarea>
+      </section>
+
+      <section class="output-pane">
+        <pre id="output" class="output">// Results appear here.</pre>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        The verifier is the same sound-over-integers Fourier&ndash;Motzkin core
+        that ships in the <code>telos</code> CLI. Nonlinear arithmetic is
+        interval-bounded; some failures may be solver limitations rather than
+        genuine spec violations.
+      </p>
+    </footer>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+[package]
+name = "tpt-telos-parser"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+documentation = "https://docs.rs/tpt-telos-parser"
+keywords = ["parser", "lexer", "ast", "grammar", "telos"]
+categories = ["parser-implementations", "compilers"]
+description = "Lexer, parser and AST for the tpt-telos language"
+
+[dependencies]
+
+[dev-dependencies]
+proptest = "1"

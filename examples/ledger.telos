@@ -1,0 +1,55 @@
+// Ledger — canonical high-consequence numeric module.
+//
+// Demonstrates tpt-telos' equality-substitution preprocessing: the solver
+// substitutes `balance = old(balance) + deposit - withdrawal` into the
+// `ensures balance >= 0` clause and proves it directly from the requires.
+//
+// Verified: `telos verify examples/ledger.telos`
+
+@boundary(cpu_bound)
+@state(persistent)
+module Ledger {
+    invariant Account {
+        balance >= 0
+    }
+
+    func deposit(mut account: Account, amount: i64) -> i64
+        requires amount > 0
+        requires account.balance + amount >= 0
+        ensures account.balance == old(account.balance) + amount
+        ensures account.balance >= 0
+    {
+        mutate state {
+            account.balance = old(account.balance) + amount;
+        }
+        account.balance
+    }
+
+    func withdraw(mut account: Account, amount: i64) -> i64
+        requires amount > 0
+        requires account.balance >= amount
+        ensures account.balance == old(account.balance) - amount
+        ensures account.balance >= 0
+    {
+        mutate state {
+            account.balance = old(account.balance) - amount;
+        }
+        account.balance
+    }
+
+    func transfer(mut sender: Account, mut receiver: Account, amount: i64)
+        requires amount > 0
+        requires sender.balance >= amount
+        requires receiver.balance + amount >= 0
+        ensures sender.balance == old(sender.balance) - amount
+        ensures receiver.balance == old(receiver.balance) + amount
+        ensures sender.balance >= 0
+        ensures receiver.balance >= 0
+        ensures sender.balance + receiver.balance == old(sender.balance) + old(receiver.balance)
+    {
+        mutate state {
+            sender.balance = old(sender.balance) - amount;
+            receiver.balance = old(receiver.balance) + amount;
+        }
+    }
+}

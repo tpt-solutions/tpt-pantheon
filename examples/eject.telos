@@ -1,0 +1,35 @@
+// Demonstrates the "eject" hatch: a function marked `@eject` is compiled as a
+// trusted, opaque implementation (`*_impl`) wrapped by a generated boundary
+// guard that still enforces its requires/ensures contracts at runtime.
+//
+// `telos build` / `telos project` honor `@eject` in-source; `telos eject` can
+// also eject functions on demand from the CLI.
+
+@boundary(cpu_bound)
+module Vault {
+    invariant Balance {
+        amount >= 0
+    }
+
+    // Normal function: fully synthesized and verified by the compiler.
+    func deposit(b: Balance, by: PositiveInt)
+        requires b.amount >= 0
+        ensures b.amount == old(b.amount) + by
+    {
+        mutate state {
+            b.amount += by
+        }
+    }
+
+    // Ejected function: the body is a trusted opaque block the developer may
+    // hand-tune, but the contract is still enforced at the boundary.
+    @eject(rust)
+    func withdraw(b: Balance, by: PositiveInt)
+        requires b.amount >= by
+        ensures b.amount == old(b.amount) - by
+    {
+        mutate state {
+            b.amount -= by
+        }
+    }
+}

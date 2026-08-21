@@ -1,0 +1,30 @@
+[package]
+name = "tpt-telos-sdk"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+description = "Programmatic orchestration API over the tpt-telos parse -> transpile -> codegen -> attest pipeline"
+keywords = ["verification", "compiler", "transpiler", "smt", "formal-methods"]
+categories = ["compilers", "development-tools"]
+
+[features]
+default = []
+# Enable the LLM-backed agent (requires an API key / provider at runtime).
+llm = ["tpt-telos-agent/llm"]
+# Enable the optional Z3 backend for exact nonlinear arithmetic.
+z3 = ["tpt-telos-verifier/z3"]
+
+[dependencies]
+tpt-telos-parser = { path = "../tpt-telos-parser", version = "0.2.0" }
+tpt-telos-ir = { path = "../tpt-telos-ir", version = "0.2.0" }
+tpt-telos-verifier = { path = "../tpt-telos-verifier", version = "0.2.0" }
+tpt-telos-router = { path = "../tpt-telos-router", version = "0.2.0" }
+tpt-telos-agent = { path = "../tpt-telos-agent", version = "0.2.0" }
+tpt-telos-codegen = { path = "../tpt-telos-codegen", version = "0.2.0" }
+
+[dev-dependencies]

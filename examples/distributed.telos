@@ -1,0 +1,24 @@
+// Showcase #6: distributed coordinator on the Go backend.
+//
+// @boundary(distributed) routes this module to Go, the backend chosen for
+// network-facing, high-concurrency, distributed systems. The example models a
+// replicated-log coordinator: a committed index that is never negative and only
+// ever grows monotonically as entries are appended.
+
+@boundary(distributed)
+module Coordinator {
+    // The committed log index is never negative.
+    invariant Log {
+        commit_index >= 0
+    }
+
+    // Append one committed entry; the index advances by exactly one.
+    func append(l: Log)
+        requires l.commit_index >= 0
+        ensures l.commit_index == old(l.commit_index) + 1
+    {
+        mutate state {
+            l.commit_index += 1
+        }
+    }
+}

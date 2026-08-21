@@ -1,0 +1,21 @@
+// Disjunction support in requires/ensures.
+// `requires a || b` splits into two verification sub-problems.
+// `ensures x > 0 || y > 0` is satisfied when at least one branch holds.
+
+module DisjunctionDemo {
+    invariant Counter {
+        v >= 0
+    }
+
+    // Premise disjunction: at least one of the two preconditions must hold.
+    // The verifier creates two sub-problems (one per branch) and both must pass.
+    // Ensures disjunction: at least one post-condition branch must hold.
+    func increment_or_clamp(c: Counter, flag: PositiveInt)
+        requires flag == 1 || flag == 2
+        ensures c.v >= 1 || c.v == 0
+    {
+        mutate state {
+            c.v += flag
+        }
+    }
+}

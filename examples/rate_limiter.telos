@@ -1,0 +1,51 @@
+// Rate Limiter — token-bucket rate limiting with formal guarantees.
+//
+// The solver substitutes `tokens = old(tokens) - used` into the
+// `ensures tokens >= 0` goal and proves it from `used <= old(tokens)`.
+//
+// Verified: `telos verify examples/rate_limiter.telos`
+
+@boundary(network_io, high_concurrency)
+module RateLimiter {
+    invariant Bucket {
+        tokens >= 0
+        capacity > 0
+        tokens <= capacity
+    }
+
+    func consume(mut bucket: Bucket, cost: i64) -> i64
+        requires cost > 0
+        requires cost <= bucket.tokens
+        ensures bucket.tokens == old(bucket.tokens) - cost
+        ensures bucket.tokens >= 0
+    {
+        mutate state {
+            bucket.tokens = old(bucket.tokens) - cost;
+        }
+        bucket.tokens
+    }
+
+    func refill(mut bucket: Bucket, amount: i64) -> i64
+        requires amount > 0
+        requires bucket.tokens + amount <= bucket.capacity
+        ensures bucket.tokens == old(bucket.tokens) + amount
+        ensures bucket.tokens >= 0
+        ensures bucket.tokens <= bucket.capacity
+    {
+        mutate state {
+            bucket.tokens = old(bucket.tokens) + amount;
+        }
+        bucket.tokens
+    }
+
+    func try_consume(mut bucket: Bucket, cost: i64) -> i64
+        requires cost > 0
+        requires cost <= bucket.tokens
+        ensures bucket.tokens >= 0
+    {
+        mutate state {
+            bucket.tokens = old(bucket.tokens) - cost;
+        }
+        bucket.tokens
+    }
+}

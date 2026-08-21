@@ -1,0 +1,64 @@
+// Showcase #3: dual-backend microservice + automatic FFI bridge.
+//
+// A CPU-bound ledger (compiled to Rust) and a network-facing gateway API
+// (compiled to Go). The tpt-telos compiler routes each module to its target
+// backend and generates the FFI bridge that lets them call each other with no
+// hand-written glue. Run it:
+//   telos verify examples/microservice.telos
+//   telos project examples/microservice.telos --check
+
+@boundary(cpu_bound, zero_allocation)
+module Ledger {
+    // A ledger account balance can never be negative.
+    invariant Account {
+        balance >= 0
+    }
+
+    // Debit `amount` from an account (CPU-bound settlement path -> Rust).
+    func settle(acct: Account, amount: PositiveInt)
+        requires acct.balance >= amount
+        ensures acct.balance == old(acct.balance) - amount
+    {
+        mutate state {
+            acct.balance -= amount
+        }
+    }
+
+    // Credit `amount` into an account.
+    func credit(acct: Account, amount: PositiveInt)
+        requires acct.balance >= 0
+        ensures acct.balance == old(acct.balance) + amount
+    {
+        mutate state {
+            acct.balance += amount
+        }
+    }
+}
+
+@boundary(network_io, high_concurrency)
+module GatewayApi {
+    // The number of pending requests in the gateway can never be negative.
+    invariant Queue {
+        pending >= 0
+    }
+
+    // Accept `count` inbound requests (network I/O path -> Go).
+    func enqueue(q: Queue, count: PositiveInt)
+        requires q.pending >= 0
+        ensures q.pending == old(q.pending) + count
+    {
+        mutate state {
+            q.pending += count
+        }
+    }
+
+    // Drain `count` requests after they are handed off to the ledger.
+    func dequeue(q: Queue, count: PositiveInt)
+        requires q.pending >= count
+        ensures q.pending == old(q.pending) - count
+    {
+        mutate state {
+            q.pending -= count
+        }
+    }
+}

@@ -1,0 +1,53 @@
+name: Playground
+
+# Build the browser playground (out-telos-wasm) and publish the `playground/`
+# static site to GitHub Pages. The WASM package is produced fresh on every run
+# (playground/pkg is git-ignored) so the hosted site always matches the source.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "playground/**"
+      - "crates/out-telos-wasm/**"
+      - "crates/tpt-telos-parser/**"
+      - "crates/tpt-telos-ir/**"
+      - "crates/tpt-telos-verifier/**"
+      - ".github/workflows/playground.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Build WASM package
+        run: wasm-pack build crates/out-telos-wasm --target web --out-dir ../../playground/pkg
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: playground
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,522 @@
+warning: D:\Programming\1PRODUCTION\Open Source\tpt-telos\Cargo.toml: unused manifest key: workspace.dev-dependencies
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+     Running unittests src\lib.rs (target\debug\deps\out_telos_wasm-40d9f0a2db53b2c8.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\main.rs (target\debug\deps\telos-53a48f83007dda83.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\cli.rs (target\debug\deps\cli-eb0cc09f962898b4.exe)
+
+running 20 tests
+test init_creates_scaffold_file ... ok
+test init_rejects_unknown_template ... ok
+test transpile_emits_rust_to_stdout ... ok
+test transpile_writes_to_output_file ... ok
+test verify_fails_on_broken_module ... ok
+test parse_reports_error_on_malformed_file ... ok
+test verify_json_on_broken_module ... ok
+test verify_json_outputs_valid_json ... ok
+test eject_writes_manifest_and_project ... ok
+test strict_rt_fails_on_real_time_go_conflict ... ok
+test project_generates_dual_backend_tree ... ok
+test verify_shows_interval_bounded_tag ... ok
+test strict_rt_passes_without_conflict ... ok
+test verify_succeeds_on_valid_module ... ok
+test verify_reports_error_on_malformed_file ... ok
+test new_scaffolds_verifiable_project ... ok
+test init_templates_all_verify ... ok
+test build_json_outputs_proof_hash ... ok
+test verify_manifest_passes_for_intact_build ... ok
+test build_compiles_generated_rust ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+     Running unittests src\lib.rs (target\debug\deps\tpt_telos_agent-342d14c2a80ef76a.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\static_agent.rs (target\debug\deps\static_agent-18043ed9065cf504.exe)
+
+running 9 tests
+test generate_synthesizes_when_elided ... ok
+test generate_returns_developer_body_when_present ... ok
+test rewrite_with_empty_counter_example_resynthesizes ... ok
+test rewrite_fixes_broken_field_from_counter_example ... ok
+test synthesize_field_and_scalar_from_ensures ... ok
+test synthesize_inequality_clause_produces_conservative_zero ... ok
+test synthesize_resolves_nested_old_arithmetic ... ok
+test transpile_scalar_out_ensures_verifies ... ok
+test loop_hits_retry_limit_and_gives_up ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\transpile.rs (target\debug\deps\transpile-27d680f2cc6ca490.exe)
+
+running 3 tests
+test intent_only_is_synthesized_and_verified ... ok
+test wallet_is_verified ... ok
+test broken_is_repaired_by_the_loop ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\tpt_telos_codegen-95e6d7eb763361a1.exe)
+
+running 24 tests
+test proof::tests::manifest_hash_changes_on_different_source ... ok
+test proof::tests::compute_hash_matches_generate ... ok
+test proof::tests::manifest_has_source_hash ... ok
+test proof::tests::manifest_hash_is_stable ... ok
+test proof::tests::rust_static_contains_used_attr ... ok
+test proof::tests::to_json_is_valid_json_structure ... ok
+test proof::tests::verify_manifest_detects_json_tampering ... ok
+test proof::tests::verify_manifest_detects_source_drift ... ok
+test proof::tests::verify_manifest_passes_for_intact_source ... ok
+test python::tests::py_safe_escapes_keywords ... ok
+test tests::analyze_scalar_param ... ok
+test python::tests::generate_python_jax_adds_import ... ok
+test tests::analyze_scalar_return_value ... ok
+test tests::analyze_struct_param_mutated_is_borrow_mut ... ok
+test tests::analyze_struct_param_unmutated_is_borrow_ref ... ok
+test python::tests::generate_python_emits_dataclass_and_function ... ok
+test tests::collect_types_gathers_struct_fields ... ok
+test tests::eject_renders_opaque_block_and_guard ... ok
+test tests::ephemeral_storage_no_serde_derive ... ok
+test tests::generate_program_emits_struct_and_invariant_method ... ok
+test tests::go_exported_capitalises ... ok
+test tests::render_func_emits_contract_doc_comments ... ok
+test tests::persistent_storage_emits_serde_derive ... ok
+test tests::render_func_emits_scalar_return ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\gen.rs (target\debug\deps\gen-fb2f9e42fd2cdcd2.exe)
+
+running 4 tests
+test elided_func_synthesizes_body ... ok
+test generated_rust_compiles_for_wallet ... ok
+test microservice_routes_modules_to_both_backends ... ok
+test ffi_bridge_is_bidirectional ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\tpt_telos_ir-6af3a01cbd86ebe0.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\extract.rs (target\debug\deps\extract-713f2e443708cce0.exe)
+
+running 27 tests
+test conclusion_location_matches_invariant_constraint_span ... ok
+test extract_disjunction_in_requires_splits_into_branches ... ok
+test extract_body_mutation_premise ... ok
+test extract_empty_contracts_ok ... ok
+test extract_cross_module_invariant_reference ... ok
+test conclusion_location_matches_source_ensures_span ... ok
+test extract_ensures_conclusion_on_field ... ok
+test extract_disjunction_with_conjunction_combines_correctly ... ok
+test extract_ensures_conclusion_on_scalar ... ok
+test extract_frame_axiom_for_unmutated_field ... ok
+test extract_interval_bounding_replaces_product_with_constant ... ok
+test extract_interval_bounding_with_partial_bounds_fails ... ok
+test extract_interval_bounding_without_bounds_fails ... ok
+test extract_invariant_premise_for_param ... ok
+test extract_maintained_invariant_conclusion ... ok
+test extract_multiple_modules ... ok
+test extract_no_disjunction_produces_single_problem ... ok
+test extract_positive_param_constraint ... ok
+test extract_old_in_arithmetic ... ok
+test extract_rejects_division_by_variable ... ok
+test extract_rejects_division_by_zero ... ok
+test extract_rejects_nonlinear_multiplication ... ok
+test extract_requires_premise ... ok
+test linear_add_and_sub ... ok
+test linear_constant_only ... ok
+test linear_scale_and_neg ... ok
+test wallet_example_ensures_locations_match_fixture_lines ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\tpt_telos_lsp-349f397be773ae7f.exe)
+
+running 7 tests
+test tests::framing_round_trips ... ok
+test tests::handle_did_change_updates_document ... ok
+test tests::handle_definition_resolves_to_func ... ok
+test tests::handle_completion_lists_symbols ... ok
+test tests::handle_references_finds_call_site ... ok
+test tests::handle_inlay_hints_shows_routing_target ... ok
+test tests::handle_code_action_suggests_requires_fix ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\lsp.rs (target\debug\deps\lsp-8887e70f2b2baf35.exe)
+
+running 9 tests
+test shutdown_then_exit_flags_server ... ok
+test unknown_request_returns_method_not_found ... ok
+test server_initialize_advertises_capabilities ... ok
+test diagnostics_flag_broken_contract_on_func_line ... ok
+test did_open_publishes_diagnostics ... ok
+test ejected_function_is_informational_not_error ... ok
+test hover_reports_contract_and_status ... ok
+test diagnostics_pass_for_verified_wallet ... ok
+test verify_and_eject_custom_requests ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\tpt_telos_parser-004c1d24db1adc12.exe)
+
+running 7 tests
+test proptests::array_types_parse ... ok
+test proptests::float_types_parse ... ok
+test proptests::disjunction_parses ... ok
+test span::tests::multi_line ... ok
+test span::tests::offset_at_end_of_source ... ok
+test span::tests::single_line ... ok
+test proptests::generated_modules_parse ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\lexer.rs (target\debug\deps\lexer-9fc3687dc45ca126.exe)
+
+running 12 tests
+test errors_on_unexpected_character ... ok
+test int_out_of_range_is_an_error ... ok
+test int_to_literal_helper ... ok
+test lexes_idents_and_integers ... ok
+test lexes_keywords ... ok
+test lexes_multi_char_operators ... ok
+test lexes_single_char_tokens ... ok
+test skips_comment_with_no_trailing_newline_at_eof ... ok
+test skips_line_comments ... ok
+test skips_whitespace ... ok
+test tracks_multibyte_span_offsets ... ok
+test tracks_token_spans ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\parser.rs (target\debug\deps\parser-e3fcd7fbcf0a8633.exe)
+
+running 21 tests
+test parses_attribute_key_value ... ok
+test parses_bare_assignment_statement ... ok
+test parses_eject_attribute_on_func ... ok
+test parses_elided_func ... ok
+test parses_empty_module ... ok
+test parses_func_without_contracts ... ok
+test parses_logical_and_in_contract ... ok
+test parses_func_with_full_body ... ok
+test parses_module_attributes ... ok
+test parses_invariant ... ok
+test parses_multiple_modules ... ok
+test parses_old_inside_arithmetic ... ok
+test rejects_attribute_on_invariant ... ok
+test parses_operator_precedence ... ok
+test rejects_function_without_body_or_semicolon ... ok
+test rejects_missing_brace_after_module_name ... ok
+test rejects_missing_rparen_in_params ... ok
+test rejects_unexpected_token_at_module_level ... ok
+test rejects_unexpected_token_in_expression ... ok
+test rejects_unknown_item_kind ... ok
+test rejects_unterminated_module ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\span.rs (target\debug\deps\span-26fd003f6d3c45b6.exe)
+
+running 4 tests
+test func_span_points_at_func_keyword_single_line ... ok
+test func_and_clause_spans_track_distinct_lines ... ok
+test invariant_span_and_constraint_spans ... ok
+test multiple_ensures_clauses_get_distinct_spans ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\tpt_telos_router-5ac312985fe6238f.exe)
+
+running 27 tests
+test tests::cpu_bound_routes_to_rust ... ok
+test tests::crypto_routes_to_rust ... ok
+test tests::distributed_routes_to_go ... ok
+test tests::go_flag_wins_over_rust_flag ... ok
+test tests::high_concurrency_routes_to_go ... ok
+test tests::high_latency_routes_to_go ... ok
+test tests::jax_flag_routes_to_python ... ok
+test tests::ml_training_routes_to_python ... ok
+test tests::multiple_go_flags_still_go ... ok
+test tests::multiple_rust_flags_still_rust ... ok
+test tests::network_io_routes_to_go ... ok
+test tests::no_flags_default_rust ... ok
+test tests::no_state_defaults_to_ephemeral ... ok
+test tests::python_beats_go_flag ... ok
+test tests::python_flag_routes_to_python ... ok
+test tests::python_target_has_no_diagnostics ... ok
+test tests::real_time_alone_has_no_diagnostics ... ok
+test tests::real_time_go_conflict_emits_diagnostic ... ok
+test tests::real_time_routes_to_rust ... ok
+test tests::route_records_justification ... ok
+test tests::state_ephemeral_sets_storage_class ... ok
+test tests::state_persistent_sets_storage_class ... ok
+test tests::state_with_boundary_combines ... ok
+test tests::unrecognised_boundary_flag_emits_diagnostic ... ok
+test tests::unrecognised_flag_defaults_to_rust ... ok
+test tests::zero_alloc_go_conflict_emits_diagnostic ... ok
+test tests::zero_allocation_routes_to_rust ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\tpt_telos_sdk-80ff4c8c00901979.exe)
+
+running 22 tests
+test build::tests::read_rust_artifact_missing_dir_is_none ... ok
+test contradiction::tests::empty_groups_are_trivially_consistent ... ok
+test contradiction::tests::no_contradiction_among_consistent_groups ... ok
+test contradiction::tests::flags_pairwise_contradiction ... ok
+test contradiction::tests::only_conflicting_pair_is_reported_among_three ... ok
+test hint::tests::hint_notes_approximation_and_disjunction ... ok
+test hint::tests::hint_reports_failure_and_post_state ... ok
+test hint::tests::passing_check_has_no_counterexample_line ... ok
+test json::tests::parses_empty_containers ... ok
+test json::tests::parses_nested_and_escapes ... ok
+test json::tests::parses_object_with_array_and_bool ... ok
+test json::tests::parses_unicode_escape ... ok
+test json::tests::rejects_trailing_characters ... ok
+test json::tests::rejects_unterminated_string ... ok
+test json::tests::reports_offset_for_error ... ok
+test prove::tests::builds_report_flagging_pairwise_contradiction ... ok
+test prove::tests::builds_report_flagging_self_unsat ... ok
+test prove::tests::human_and_json_format_are_stable ... ok
+test prove::tests::parses_groups_from_object_with_groups_key ... ok
+test prove::tests::parses_groups_from_top_level_array ... ok
+test prove::tests::rejects_unknown_relation ... ok
+test build::tests::read_rust_artifact_reads_generated_rust_lib ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\bin\telos-prove.rs (target\debug\deps\telos_prove-751fbc7f01b0d31f.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\sdk.rs (target\debug\deps\sdk-ee4083ab843bae3e.exe)
+
+running 5 tests
+test check_contradictions_flags_conflicting_rules_without_telos_source ... ok
+test compile_static_accepts_bytes ... ok
+test wallet_verifies_end_to_end ... ok
+test broken_is_silently_repaired ... ok
+test unsatisfiable_fails_with_contradiction_hint ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\telos_prove.rs (target\debug\deps\telos_prove-1007583c53d262ea.exe)
+
+running 10 tests
+test help_exits_zero ... ok
+test json_mode_emits_machine_readable ... ok
+test malformed_json_exits_nonzero ... ok
+test reads_from_stdin ... ok
+test reports_consistent_groups ... ok
+test reports_pairwise_contradiction_from_file ... ok
+test reports_self_unsat_group ... ok
+test strict_exits_nonzero_on_contradiction ... ok
+test strict_exits_zero_on_consistent ... ok
+test unknown_flag_exits_nonzero ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running unittests src\lib.rs (target\debug\deps\tpt_telos_verifier-fa2985ed5db85933.exe)
+
+running 29 tests
+test solver::extended_tests::counterexample_none_when_entailed ... ok
+test solver::extended_tests::entails_across_i64_extremes ... ok
+test solver::extended_tests::counterexample_finds_witness_for_failed_postcondition ... ok
+test cluster::tests::pool_preserves_order ... ok
+test solver::extended_tests::entails_neq_negative ... ok
+test solver::extended_tests::integer_overflow_edge_bounds ... ok
+test solver::extended_tests::entails_with_neq_conclusion ... ok
+test cluster::tests::pool_verifies_multiple_problems_in_parallel ... ok
+test cluster::tests::pool_verifies_single_problem ... ok
+test solver::extended_tests::model_solves_linear_division ... ok
+test solver::extended_tests::sat_three_variable_bounds ... ok
+test solver::extended_tests::model_respects_all_relations ... ok
+test solver::extended_tests::unsat_three_variables ... ok
+test solver::extended_tests::unsat_checked_overflow_is_conservative ... ok
+test solver::extended_tests::unsat_with_mixed_relations ... ok
+test solver::model_tests::model_counterexample_for_postcondition ... ok
+test solver::model_tests::model_unsat_none ... ok
+test solver::model_tests::model_finds_witness ... ok
+test solver::tests::entails_negative ... ok
+test solver::tests::entails_simple ... ok
+test solver::tests::entails_affine_postcondition ... ok
+test solver::tests::sat_consistent_bounds ... ok
+test solver::tests::unsat_obvious ... ok
+test solver::proptests::unsat_contradiction ... ok
+test solver::proptests::negation_roundtrip ... ok
+test solver::proptests::entails_refl ... ok
+test solver::proptests::model_satisfies_its_constraints ... ok
+test solver::proptests::entails_implies_no_counterexample ... ok
+test solver::proptests::counterexample_satisfies_negated ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\interval.rs (target\debug\deps\interval-140c5242dccc80b8.exe)
+
+running 3 tests
+test interval_bounding_constant_replaces_product ... ok
+test interval_bounding_marks_approximation ... ok
+test interval_bounding_verifies ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\nested.rs (target\debug\deps\nested-50c202fcc88be9d4.exe)
+
+running 9 tests
+test distributed_example_passes ... ok
+test compound_has_expected_problem_shape ... ok
+test crypto_example_passes ... ok
+test overflow_example_does_not_panic ... ok
+test nested_example_passes ... ok
+test cross_module_example_passes ... ok
+test real_time_example_passes ... ok
+test disjunction_example_passes ... ok
+test cryptocurrency_example_passes ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\wallet.rs (target\debug\deps\wallet-e12253dc052ccfd6.exe)
+
+running 1 test
+test wallet_example_passes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests out_telos_wasm
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests tpt_telos_agent
+
+running 7 tests
+test crates\tpt-telos-agent\src\lib.rs - Candidate (line 66) ... ok
+test crates\tpt-telos-agent\src\static_agent.rs - static_agent::synthesize_from_ensures (line 236) ... ok
+test crates\tpt-telos-agent\src\lib.rs - FuncSpec (line 38) ... ok
+test crates\tpt-telos-agent\src\static_agent.rs - static_agent::StaticAgent (line 27) ... ok
+test crates\tpt-telos-agent\src\lib.rs - render_candidate (line 328) ... ok
+test crates\tpt-telos-agent\src\lib.rs - transpile_func (line 165) ... ok
+test crates\tpt-telos-agent\src\lib.rs - transpile_module (line 291) ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.54s
+
+   Doc-tests tpt_telos_codegen
+
+running 4 tests
+test crates\tpt-telos-codegen\src\project.rs - project::Project::write (line 91) - compile ... ok
+test crates\tpt-telos-codegen\src\project.rs - project::generate_project (line 133) ... ok
+test crates\tpt-telos-codegen\src\lib.rs - generate_program (line 126) ... ok
+test crates\tpt-telos-codegen\src\project.rs - project::GeneratedFile (line 44) ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.67s
+
+   Doc-tests tpt_telos_ir
+
+running 8 tests
+test crates\tpt-telos-ir\src\ir.rs - ir::Linear::add (line 84) ... ok
+test crates\tpt-telos-ir\src\ir.rs - ir::Linear::scale (line 153) ... ok
+test crates\tpt-telos-ir\src\ir.rs - ir::Linear::constant_only (line 66) ... ok
+test crates\tpt-telos-ir\src\extract.rs - extract::extract (line 1085) ... ok
+test crates\tpt-telos-ir\src\ir.rs - ir::Linear::sub (line 116) ... ok
+test crates\tpt-telos-ir\src\ir.rs - ir::Constraint (line 31) ... ok
+test crates\tpt-telos-ir\src\ir.rs - ir::Linear::neg (line 135) ... ok
+test crates\tpt-telos-ir\src\ir.rs - ir::Linear::var (line 48) ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.89s
+
+   Doc-tests tpt_telos_lsp
+
+running 13 tests
+test crates\tpt-telos-lsp\src\lib.rs - run_stdio (line 501) - compile ... ok
+test crates\tpt-telos-lsp\src\analysis.rs - analysis::code_actions (line 293) ... ok
+test crates\tpt-telos-lsp\src\analysis.rs - analysis::diagnostics (line 126) ... ok
+test crates\tpt-telos-lsp\src\analysis.rs - analysis::hover_markdown (line 218) ... ok
+test crates\tpt-telos-lsp\src\analysis.rs - analysis::analyze (line 49) ... ok
+test crates\tpt-telos-lsp\src\lib.rs - Server::new (line 46) ... ok
+test crates\tpt-telos-lsp\src\analysis.rs - analysis::format_source (line 518) ... ok
+test crates\tpt-telos-lsp\src\analysis.rs - analysis::hover_markdown (line 204) ... ok
+test crates\tpt-telos-lsp\src\analysis.rs - analysis::build_index (line 981) ... ok
+test crates\tpt-telos-lsp\src\analysis.rs - analysis::diagnostics (line 143) ... ok
+test crates\tpt-telos-lsp\src\lib.rs - Server::handle (line 86) ... ok
+test crates\tpt-telos-lsp\src\lib.rs - Server::should_exit (line 64) ... ok
+test crates\tpt-telos-lsp\src\lib.rs - run_stdio (line 507) ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.03s
+
+   Doc-tests tpt_telos_parser
+
+running 8 tests
+test crates\tpt-telos-parser\src\lexer.rs - lexer::lex (line 146) ... ok
+test crates\tpt-telos-parser\src\parser.rs - parser::parse (line 1049) ... ok
+test crates\tpt-telos-parser\src\ast.rs - ast::Item::func_name (line 123) ... ok
+test crates\tpt-telos-parser\src\lexer.rs - lexer::lex (line 136) ... ok
+test crates\tpt-telos-parser\src\span.rs - span::LineIndex::new (line 26) ... ok
+test crates\tpt-telos-parser\src\ast.rs - ast::Type::name (line 32) ... ok
+test crates\tpt-telos-parser\src\parser.rs - parser::parse (line 1027) ... ok
+test crates\tpt-telos-parser\src\ast.rs - ast::Func::is_ejected (line 224) ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.42s
+
+   Doc-tests tpt_telos_router
+
+running 5 tests
+test crates\tpt-telos-router\src\lib.rs - Target::as_str (line 47) ... ok
+test crates\tpt-telos-router\src\lib.rs - route_checked (line 206) ... ok
+test crates\tpt-telos-router\src\lib.rs - Target (line 21) ... ok
+test crates\tpt-telos-router\src\lib.rs - Route::is_rust (line 121) ... ok
+test crates\tpt-telos-router\src\lib.rs - route (line 361) ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.56s
+
+   Doc-tests tpt_telos_sdk
+
+running 8 tests
+test crates\tpt-telos-sdk\src\lib.rs - compile_static (line 103) ... ok
+test crates\tpt-telos-sdk\src\json.rs - json::parse_json (line 108) ... ok
+test crates\tpt-telos-sdk\src\hint.rs - hint::format_hint (line 23) ... ok
+test crates\tpt-telos-sdk\src\contradiction.rs - contradiction::check_contradictions (line 59) ... ok
+test crates\tpt-telos-sdk\src\lib.rs - compile (line 61) ... ok
+test crates\tpt-telos-sdk\src\hint.rs - hint::format_outcome_hints (line 112) ... ok
+test crates\tpt-telos-sdk\src\hint.rs - hint::format_hint (line 46) ... ok
+test crates\tpt-telos-sdk\src\contradiction.rs - contradiction::check_contradictions (line 91) ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.03s
+
+   Doc-tests tpt_telos_verifier
+
+running 10 tests
+test crates\tpt-telos-verifier\src\solver.rs - solver::model (line 351) ... ok
+test crates\tpt-telos-verifier\src\solver.rs - solver::unsat (line 110) ... ok
+test crates\tpt-telos-verifier\src\cluster.rs - cluster (line 9) ... ok
+test crates\tpt-telos-verifier\src\solver.rs - solver::entails (line 237) ... ok
+test crates\tpt-telos-verifier\src\solver.rs - solver::unsat_checked (line 139) ... ok
+test crates\tpt-telos-verifier\src\solver.rs - solver::Model (line 275) ... ok
+test crates\tpt-telos-verifier\src\solver.rs - solver::counterexample (line 499) ... ok
+test crates\tpt-telos-verifier\src\solver.rs - solver::satisfies_model (line 530) ... ok
+test crates\tpt-telos-verifier\src\verify.rs - verify::verify (line 79) ... ok
+test crates\tpt-telos-verifier\src\verify.rs - verify::is_unsat (line 179) ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.94s
+

@@ -1,0 +1,32 @@
+// Demonstrates integer bounds at the extreme end of the representable range.
+//
+// A naive Fourier-Motzkin implementation using fixed-width integers would
+// overflow while combining the large coefficients and produce a spurious
+// contradiction (unsound) or a spurious satisfiable verdict. tpt-telos uses
+// checked `i128` arithmetic and degrades conservatively (the constraint is
+// treated as satisfiable / "too large to decide exactly") rather than risking
+// a wrong result. For exact arithmetic on magnitudes this large, build with
+// `--features z3` and pass `--solver z3`.
+//
+// This file is intentionally a tautology (it must verify) so the integration
+// test only asserts the verifier does not panic on huge constants.
+
+@boundary(cpu_bound)
+module HugeBounds {
+    invariant Cell { v >= -9223372036854775807 }
+
+    func identity(a: Int, b: Int, c: Int, d: Int, e: Int)
+        requires a >= -9223372036854775807
+        requires a <= 9223372036854775807
+        requires b >= -9223372036854775807
+        requires b <= 9223372036854775807
+        requires c >= -9223372036854775807
+        requires c <= 9223372036854775807
+        requires d >= -9223372036854775807
+        requires d <= 9223372036854775807
+        requires e >= -9223372036854775807
+        requires e <= 9223372036854775807
+        ensures a + b + c + d + e == a + b + c + d + e
+    {
+    }
+}

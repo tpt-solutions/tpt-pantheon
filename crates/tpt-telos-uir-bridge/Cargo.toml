@@ -1,0 +1,55 @@
+[package]
+name = "tpt-telos-uir-bridge"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+description = "TPT-UIR prover bridge: proves memory-allocation bounds of TPT-UIR regions with tpt-telos' SMT core (Phase 4 of tpt-uir)"
+
+[features]
+default = []
+# Enables consumption of the sibling `tpt-uir` workspace (core/dialects/serde) and the
+# tpt-telos SMT core used for the proof. Requires the `tpt-uir` repo to be present at
+# `../../../tpt-uir` (a sibling of this repo). With `uir` off, the crate compiles to a
+# thin stub so the default `cargo test --workspace` stays green in CI without tpt-uir.
+uir = [
+    "dep:tpt-uir-core",
+    "dep:tpt-uir-dialects",
+    "dep:tpt-uir-serde",
+    "dep:tpt-telos-verifier",
+    "dep:tpt-telos-ir",
+    "dep:postcard",
+]
+# Exact integer / nonlinear allocation-size solving via the Z3 SMT solver (requires the
+# Z3 shared library on the link path). Implies `uir`.
+z3 = ["uir", "tpt-telos-verifier/z3", "dep:z3"]
+
+[dependencies]
+# Within-repo solver core (optional; pulled in by the `uir` feature).
+tpt-telos-verifier = { path = "../tpt-telos-verifier", version = "0.2.0", optional = true }
+tpt-telos-ir = { path = "../tpt-telos-ir", version = "0.2.0", optional = true }
+
+# Sibling `tpt-uir` workspace (optional; pulled in by the `uir` feature). These are
+# cross-repo path deps; switch to git deps once `tpt-uir` is published.
+tpt-uir-core = { path = "../../../tpt-uir/crates/tpt-uir-core", features = ["serde"], optional = true }
+tpt-uir-dialects = { path = "../../../tpt-uir/crates/tpt-uir-dialects", optional = true }
+tpt-uir-serde = { path = "../../../tpt-uir/crates/tpt-uir-serde", features = ["std"], optional = true }
+
+# Z3 SMT solver (optional; behind the `z3` feature).
+z3 = { version = "0.12", optional = true }
+# postcard error type surfaced by the file/byte readers (optional; pulled in by `uir`).
+postcard = { version = "1.0", default-features = false, features = ["alloc"], optional = true }
+
+[[bin]]
+name = "telos-uir-prove"
+path = "src/bin/telos-uir-prove.rs"
+required-features = ["uir"]
+
+# NOTE: no `[dev-dependencies]` that reference the sibling `tpt-uir` workspace.
+# The crate's tests live in `#[cfg(feature = "uir")]` modules and use the optional
+# `[dependencies]` (activated by `--features uir`), so a default `cargo test
+# --workspace` in CI does not require the `tpt-uir` repo to be present.

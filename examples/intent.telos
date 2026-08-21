@@ -1,0 +1,19 @@
+@boundary(cpu_bound)
+module Counter {
+    // A counter value can never be negative.
+    invariant Counter {
+        value >= 0
+    }
+
+    // Intent-only: the compiler synthesizes the body from the contract.
+    func increment(c: Counter, by: PositiveInt)
+        requires c.value >= 0
+        ensures c.value == old(c.value) + by
+    ;
+
+    // Intent-only: the compiler synthesizes the body from the contract.
+    func decrement(c: Counter, by: PositiveInt)
+        requires c.value >= by
+        ensures c.value == old(c.value) - by
+    ;
+}

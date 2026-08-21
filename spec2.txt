@@ -1,0 +1,72 @@
+Phase 6 Design Document: The Auditable AI Intent Layer
+1. Vision & Mission
+Vision: To become the industry-standard verification and audit layer for AI-generated software, ensuring that autonomous agents can only deploy code that mathematically satisfies its declared intent.
+Mission: Provide a flexible, contract-driven transpiler that accepts AI-generated intent, verifies it against formal bounds (QF_LRA), routes it to the appropriate target language, and embeds a cryptographic, tamper-evident proof manifest into the output.
+2. Core Philosophy (The "Telos Way")
+Intent Over Implementation: The .telos source is a specification of what must be true (requires/ensures), not necessarily a perfect, idiomatic implementation of how. The AI provides the draft; the verifier enforces the rules.
+Fail Fast, Fail Mathematically: Hallucinations are caught at compile-time via SMT/Fourier-Motzkin solving, not at runtime via unit tests.
+Cryptographic Accountability: Every compiled output carries a TELOS_PROOF_MANIFEST. If the source changes, the hash changes. If the verification fails, the manifest is not generated. No proof, no deployment.
+Pragmatic Multi-Target: Unlike Eidos (which targets pure no_std Rust for absolute safety), Telos targets the boundaries: Go for microservices, Python/JAX for ML pipelines, and Rust for performance cores, applying target-specific routing diagnostics (e.g., ZeroAllocGoConflict).
+3. Architecture: The 4-Stage Pipeline
+Ingestion (telos-parser + telos-agent): Accepts .telos files, potentially generated iteratively by an LLM agent.
+Verification (telos-verifier): Extracts contracts and runs them through the Fourier-Motzkin solver (or Z3 backend). Crucially, it generates structured, machine-readable counterexamples on failure.
+Routing & Diagnostics (telos-router): Analyzes the verified AST against the target language’s constraints (e.g., flagging GC-unsafe patterns for Go, or real-time latency violations).
+Emission (telos-codegen): Generates the target code and embeds the TELOS_PROOF_MANIFEST (SHA-256 of source + verifier outcomes) as a static, immutable artifact in the output.
+4. Phase 6 Deliverables (Next 3-6 Months)
+Deliverable 1: Structured Agentic Feedback Loop. Refactor verifier errors into a strict JSON schema (e.g., { "function": "calc", "violated": "ensures", "counterexample": {"x": 0, "y": 5}, "suggestion": "..." }). This allows an LLM to auto-correct its own code without human intervention.
+Deliverable 2: Manifest Standardization. Formalize the telos-proof.json schema and create a lightweight, standalone CLI tool to verify these manifests in CI/CD pipelines (e.g., telos-attest verify binary.rs).
+Deliverable 3: Target Polish. Solidify the Python/JAX codegen to ensure the emitted @dataclass runtime guards perfectly mirror the verified QF_LRA bounds, making Telos highly attractive to ML engineers who need safety wrappers around JAX models.
+
+
+The New Crate: telos-sdk
+Location: tpt-telos/crates/telos-sdk
+Purpose: To expose a clean, programmatic, and LLM-friendly API that orchestrates the Telos pipeline and translates strict compiler diagnostics into structured feedback that an AI agent can understand and act upon.
+1. Core Architecture of telos-sdk
+The crate will act as the high-level orchestrator. While the other crates do the heavy lifting, telos-sdk provides the "Agent Loop" primitives.
+Pipeline: A unified struct that chains parse -> verify -> route -> codegen.
+AgentContext: Holds the state of the current compilation attempt, including the source code, the target language, and the history of previous verification attempts.
+DiagnosticTranslator: The most critical component. It takes raw, internal compiler errors and converts them into a strict, machine-readable JSON schema.
+2. The LLM Feedback Schema (The "Secret Sauce")
+AI agents fail when they get generic error messages like Error: type mismatch at line 14. telos-sdk will output a structured VerificationReport specifically designed for LLM context windows.
+Here is the JSON schema the SDK will emit when a verification fails:
+{
+  "status": "FAILED",
+  "target": "rust",
+  "manifest_hash": null,
+  "diagnostics": [
+    {
+      "severity": "error",
+      "function": "calculate_fuel_burn",
+      "contract_violated": "ensures",
+      "predicate": "fuel_remaining >= 0.0",
+      "location": { "line": 14, "col": 8 },
+      "counterexample": {
+        "initial_fuel": 10.5,
+        "burn_rate": 2.0,
+        "time_elapsed": 6.0
+      },
+      "solver_trace": "Fourier-Motzkin deduced that if time_elapsed > 5.25, fuel_remaining becomes negative.",
+      "agent_hint": "Add a requires constraint ensuring time_elapsed <= (initial_fuel / burn_rate), or clamp the result."
+    }
+  ]
+}
+
+Why this matters: The LLM doesn't just get an error; it gets the exact mathematical counterexample that broke its logic, and a hint on how to fix it. This enables true autonomous self-correction.
+3. How External Agents Will Use It
+Since the SDK is a Rust crate, but most AI agents (LangChain, AutoGen, custom Python/TS scripts) run in Python or Node.js, telos-sdk will be the foundation for bindings:
+Python Bindings (telos-py): Using PyO3, we wrap telos-sdk so a Python agent can call telos.verify_and_compile(source_code, target="go") and receive a Python dictionary matching the JSON schema above.
+Local Daemon Mode: Alternatively, telos-sdk can run as a lightweight local gRPC/HTTP server. The AI agent sends the .telos source code to localhost:8080/verify, and the SDK returns the structured JSON. This keeps the heavy Rust toolchain out of the agent's memory space.
+4. Integration with the Workspace Cargo.toml
+Your workspace Cargo.toml in tpt-telos will simply add the new member:
+
+[workspace]
+members = [
+    "crates/telos-parser",
+    "crates/telos-ir",
+    "crates/telos-verifier",
+    "crates/telos-router",
+    "crates/telos-codegen",
+    "crates/telos-agent", # (If you have an internal agent loop)
+    "crates/telos-sdk",   # <-- NEW: The public-facing agentic bridge
+]
+

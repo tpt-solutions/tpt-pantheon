@@ -1,0 +1,9 @@
+[
+  {
+    "label": "self_conflict",
+    "constraints": [
+      { "linear": { "terms": [["x", 1]], "constant": -1 }, "relation": ">=" },
+      { "linear": { "terms": [["x", 1]], "constant": 0 }, "relation": "<=" }
+    ]
+  }
+]

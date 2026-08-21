@@ -1,0 +1,16 @@
+// Intentionally broken: the mutation adds to `from` instead of subtracting,
+// which violates the `ensures` clause. The verifier should report FAIL.
+module Broken {
+    invariant Wallet {
+        balance >= 0
+    }
+
+    func transfer(from: Wallet, to: Wallet, amount: PositiveInt)
+        requires from.balance >= amount
+        ensures from.balance == old(from.balance) - amount
+    {
+        mutate state {
+            from.balance += amount
+        }
+    }
+}
