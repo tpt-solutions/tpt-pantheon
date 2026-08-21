@@ -1,0 +1,27 @@
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+exclude = ["services/identity"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+authors = ["TPT Solutions"]
+repository = "https://example.com/tpt-pantheon"
+
+[workspace.dependencies]
+# Shared spine crates. Add new internal crates here as they are born.
+tpt-pantheon-spine-audit-log = { path = "crates/tpt-pantheon-spine-audit-log", version = "0.1.0" }
+tpt-pantheon-spine-wasm-sandbox = { path = "crates/tpt-pantheon-spine-wasm-sandbox", version = "0.1.0" }
+tpt-pantheon-spine-telemetry = { path = "crates/tpt-pantheon-spine-telemetry", version = "0.1.0" }
+
+# Common third-party deps pinned for the whole workspace.
+thiserror = "2"
+tracing = "0.1"
+anyhow = "1"
+sha2 = "0.10"
+
+[profile.release]
+opt-level = 3
+lto = "thin"

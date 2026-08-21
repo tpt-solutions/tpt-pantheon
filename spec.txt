@@ -1,0 +1,233 @@
+# Pantheon — Platform Design Document (Monorepo, Rev. 3)
+
+**Status:** Hypothetical, superseding the prior "full rewrite" revision on one
+point: Identity is vendored in, not rewritten. Everything else in that
+revision stands.
+
+**Naming correction:** all newly-written crates use the **`tpt-pantheon-`**
+prefix (e.g. `tpt-pantheon-aegis`), not `pantheon-`. Vendored crates keep
+their original, already-published names unchanged (`tpt-keystone`,
+`tpt-telos`, `tpt-appfront`, `tpt-identity`) — vendoring means the lineage
+is the same crate, so the name doesn't change; rewriting means it's a new
+implementation, so it gets the new prefix. This one rule resolves naming for
+every component in the system without needing a case-by-case decision.
+
+---
+
+## 1. Thesis (unchanged)
+
+One coherent, self-contained system, designed together from day one, rather
+than integrated after the fact. Rewriting is the default for new logic — but
+not a blanket rule applied without regard to whether it actually serves
+coherence. Two components are explicit, deliberate exceptions to "rewrite
+everything," decided on their own technical merits, not out of convenience:
+
+- **Identity** stays vendored (Go, SQLite) — the DID/VC/OIDC standards
+  ecosystem is more mature in Go than Rust, and reimplementing
+  standards-conformant identity cryptography from scratch trades a real,
+  audited implementation for a new one with no track record, for no
+  coherence benefit large enough to justify that risk.
+- **`tpt-pantheon-wasm-sandbox`** stays a thin wrapper, not a reimplementation
+  — wasmtime/wasmtime-wasi/cap-std already solve WASM sandboxing correctly;
+  this crate's entire job is translating a `SandboxPermissions` struct into
+  correct configuration of those libraries, nothing more.
+
+Everything else — Aegis, Synapse (including its former Go control plane),
+Workflow, Scheduler, Zephyr, Tectonic, Faros, Studio, Marketplace, Chaos,
+the CLI — is rewritten fresh in Rust, inside one workspace, sized to what
+Pantheon actually needs rather than to matching an old repo's full feature
+list.
+
+## 2. Repository structure
+
+**One repo: `tpt-pantheon`.**
+
+```
+tpt-pantheon/
+├── Cargo.toml                        # workspace root (Rust members only)
+├── crates/
+│   ├── keystone/                      # vendored, existing, unrenamed
+│   ├── telos/                         # vendored, existing, unrenamed
+│   ├── appfront/                      # vendored, existing, unrenamed
+│   ├── tpt-pantheon-spine-audit-log/   # new, shared
+│   ├── tpt-pantheon-spine-wasm-sandbox/# new, thin wrapper (see §5.3)
+│   ├── tpt-pantheon-spine-telemetry/   # new, shared
+│   ├── tpt-pantheon-aegis/             # new, app-layer IAM
+│   ├── tpt-pantheon-synapse/           # new, messaging fabric (all-Rust)
+│   ├── tpt-pantheon-workflow/          # new, durable execution
+│   ├── tpt-pantheon-scheduler/         # new, distributed jobs
+│   ├── tpt-pantheon-zephyr/            # new, edge gateway
+│   ├── tpt-pantheon-tectonic/          # new, IaC
+│   ├── tpt-pantheon-faros/             # new, control plane / viz
+│   ├── tpt-pantheon-studio/            # new, IDE integration
+│   ├── tpt-pantheon-marketplace/       # new, extension registry
+│   ├── tpt-pantheon-chaos/             # new, fault injection
+│   └── tpt-pantheon-cli/               # new, the `pantheon` binary
+├── services/
+│   └── identity/                       # vendored, existing, Go — NOT a
+│                                        # Cargo workspace member; own
+│                                        # go.mod, own toolchain, invoked
+│                                        # via top-level justfile/CI, not
+│                                        # `cargo build`
+└── SPINE.md
+```
+
+Identity is the one component that sits outside the Cargo workspace by
+necessity (it's Go), placed under `services/` rather than `crates/` to make
+that distinction visually obvious in the tree, not just documented in prose.
+It's still governed by the same spine contracts (§5) and the same one-repo,
+one-history policy — just built with `go build` instead of `cargo build`,
+wired into the same top-level `justfile`/CI pipeline as everything else.
+
+## 3. Guiding principles (updated)
+
+1. **One workspace, one language, one storage engine — with two named,
+   deliberate exceptions (§1), not silent drift.** Every future exception
+   requires the same standard: a real technical reason, written down, not
+   convenience.
+2. **Vendoring vs. rewriting is a naming-visible decision.** Vendored keeps
+   its original name; rewritten gets `tpt-pantheon-`. Anyone reading a
+   `Cargo.toml` dependency list can tell which is which without checking
+   documentation.
+3. **Contracts before components, compile-time enforced where possible**
+   (§5) — unchanged from the prior revision.
+4. **Every "integrated" claim needs a wedge** — unchanged.
+5. **Friction picks the next component** — unchanged. This document still
+   doesn't authorize building everything in parallel.
+6. **Rewrite scope is sized to real need**, not to matching an old repo's
+   full feature list — unchanged, and the reason Identity didn't need to be
+   rewritten to fit this system at all: vendoring it outright serves the
+   same "don't build more than's needed" principle better than a partial
+   rewrite would have.
+7. **Calibrated claims only; Definition of Done + version tag, every
+   time** — unchanged.
+
+## 4. Layered architecture
+
+```
+┌───────────────────────────────────────────────────────────────────┐
+│ Layer 5 — Ecosystem & Control Plane: Marketplace · Faros · Studio · Chaos │
+├───────────────────────────────────────────────────────────────────┤
+│ Layer 4 — Production & Delivery: Zephyr · Tectonic · Starters       │
+├───────────────────────────────────────────────────────────────────┤
+│ Layer 3 — Orchestration: tpt-pantheon-cli · Workflow · Scheduler     │
+├───────────────────────────────────────────────────────────────────┤
+│ Layer 2 — Identity & Messaging (isolated by deployment):            │
+│   Aegis (rewritten, own Keystone instance) ·                        │
+│   Identity (vendored, Go, own SQLite, own deployment) ·             │
+│   Synapse (rewritten, all-Rust)                                     │
+├───────────────────────────────────────────────────────────────────┤
+│ Layer 1 — Core Primitives (vendored, existing): Keystone · Telos ·  │
+│   AppFront                                                          │
+├───────────────────────────────────────────────────────────────────┤
+│ Layer 0 — Spine crates: tpt-pantheon-spine-audit-log ·               │
+│   tpt-pantheon-spine-wasm-sandbox · tpt-pantheon-spine-telemetry     │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+Same gating rule as before: nothing in a layer starts until the layer below
+has a real, working, tested proof in the monorepo.
+
+## 5. Layer 0 — Spine
+
+### 5.1 Storage contract
+Every Rust crate in `crates/` either depends on `tpt-keystone-sdk`, or is
+listed in the boundary register (§7) with a stated reason. Identity, being
+outside the workspace entirely, is registered by default and needs no
+separate justification beyond §1.
+
+### 5.2 Audit contract
+Any crate mutating persistent state depends on
+`tpt-pantheon-spine-audit-log` and calls `AuditSink::append` in its write
+path. CI includes a static check: any crate with a Keystone write dependency
+must also list `tpt-pantheon-spine-audit-log` as a dependency, or be
+explicitly exempted in `SPINE.md` with a reason (e.g. pure read-only
+services).
+
+### 5.3 Sandbox contract — scope fixed explicitly
+`tpt-pantheon-spine-wasm-sandbox` is, and remains, a thin policy layer:
+
+- Takes a `SandboxPermissions` struct (network / filesystem / Keystone /
+  secrets / fuel / memory / timeout).
+- Translates it into: `wasmtime::Store` config (fuel, memory limit, epoch
+  timeout), a `cap-std`-backed `WasiCtx` (only granted paths preopened, no
+  ambient authority), and conditional host-function registration on the
+  `Linker` — an ungranted capability has no corresponding import in the
+  instantiated module's environment, not just a runtime-checked denial.
+- Owns none of the actual WASM execution, memory isolation, or fuel
+  accounting — `wasmtime`/`wasmtime-wasi`/`cap-std` do that.
+- `cargo deny` bans any direct `wasmtime` dependency outside this one crate,
+  so nothing downstream can quietly reimplement sandboxing on its own.
+- **If this crate exceeds a few hundred lines of configuration-translation
+  logic, that's a signal it has drifted from its job**, not a sign of
+  healthy growth — flagged explicitly here so it's checkable later, not just
+  a verbal intention.
+
+### 5.4 Telemetry contract
+`tpt-pantheon-spine-telemetry` — a shared OTLP emission wrapper, specified
+alongside the audit crate from day one (no longer deferred, since this
+revision is designed as one system rather than integrated after the fact).
+
+## 6. Layer 1 — Core Primitives (vendored, unchanged in substance)
+
+Keystone, Telos, AppFront — vendored via `git subtree`, names unchanged,
+history preserved. Milestone 1 (the wedge) proves these three cohere,
+benchmarked against a competent conventional stack — unchanged from every
+prior revision of this plan.
+
+## 7. Layer 2 — Identity & Messaging
+
+- **Identity (vendored)** — Go, SQLite, its own deployment. Listed in the
+  boundary register for two independent reasons: (a) domain-appropriate
+  language/ecosystem choice (§1), and (b) deliberate trust-boundary
+  isolation (same reasoning as Aegis, below) — it would be isolated by
+  deployment even if it were Rust.
+- **`tpt-pantheon-aegis` (rewritten)** — OIDC/IAM in Rust, its own Keystone
+  instance, its own deployed process. v1 scope: authorization code + PKCE,
+  session management, RBAC — sized to what the Layer 1/2 wedge needs, not
+  the full feature set of the original standalone Aegis.
+- **`tpt-pantheon-synapse` (rewritten, all-Rust)** — no Go control plane
+  anymore; consolidated into Rust given the existing, proven Raft
+  implementation in Scheduler removes the original justification for a
+  separate stack here.
+
+**Boundary register:**
+
+| Component | Storage/runtime | Reason |
+|---|---|---|
+| Identity | Go, SQLite, own deployment | Domain-mature standards ecosystem (§1) + deliberate trust-boundary isolation |
+| Aegis | Own Keystone instance, own deployment | Deliberate trust-boundary isolation — same engine as everything else, isolated by instance and lifecycle, not by stack |
+
+**Milestone 2 proof:** the wedge gains real Aegis-issued auth, and a test
+confirms the wedge app's database role has no grant on Aegis's Keystone
+instance. A second test confirms Identity, reachable only through its own
+API, is never queried directly by anything outside its own service boundary.
+
+## 8. Layers 3–5 (unchanged in shape and gating from the prior revision)
+
+`tpt-pantheon-cli` (binary name `pantheon`), Workflow (Keystone-native from
+commit one), Scheduler (kept intentionally independent of Keystone — no
+forced dependency, per principle 5), Tectonic, Zephyr, Starters, Faros,
+Studio, Marketplace (first real consumer of
+`tpt-pantheon-spine-wasm-sandbox`), Chaos — same milestone-gated build order
+as the prior revision. Each layer starts only once the layer below has
+shipped a real, working proof inside the monorepo.
+
+## 9. What changed vs. the previous (full-rewrite) revision
+
+| | Full-rewrite revision | This revision |
+|---|---|---|
+| Identity | Rewritten in Rust, own Keystone instance | Vendored as-is (Go/SQLite), own deployment |
+| Crate naming | `pantheon-*` | `tpt-pantheon-*` |
+| Naming rule | Implicit | Explicit: vendored keeps its name, rewritten gets the new prefix |
+| Wasm sandbox scope | Stated as a wrapper | Restated with concrete technical detail + an explicit drift check (§5.3) |
+| Everything else | — | Unchanged |
+
+## 10. Non-goals (unchanged)
+
+No component built because a diagram has a box for it. No "zero bugs"
+language. TPT Compute stays a fully separate program. No layer starts ahead
+of a working proof from the layer below. No crate rewritten past the scope
+Pantheon actually needs. No exception to "one language, one engine" without
+a written, technical reason in this document or `SPINE.md` — Identity and
+`tpt-pantheon-spine-wasm-sandbox` are the only two currently on record.

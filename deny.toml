@@ -1,0 +1,47 @@
+# cargo-deny configuration for tpt-pantheon.
+#
+# Standard supply-chain / license gates live here. The one spec-specific rule
+# — "no crate may take a *direct* `wasmtime` dependency except
+# `tpt-pantheon-spine-wasm-sandbox`" — cannot be expressed as a flat crate ban
+# in cargo-deny (a flat ban would also forbid the sandbox crate itself). It is
+# therefore enforced by a dedicated graph check: `ci/check-sandbox-boundary`.
+# That script is wired into the `deny` justfile recipe and the CI pipeline, and
+# is the authoritative enforcement of the §5.3 boundary.
+
+[advisories]
+version = 2
+yanked = "warn"
+ignore = []
+
+[licenses]
+version = 2
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-DFS-2016",
+    "Zlib",
+    "MPL-2.0",
+    "CC0-1.0",
+    "Unlicense",
+    "MIT-0",
+]
+confidence-threshold = 0.8
+exceptions = [
+    # Vendored crates may carry their own upstream license; document here.
+]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+highlight = "all"
+allow = []
+deny = []
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "warn"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

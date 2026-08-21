@@ -1,0 +1,24 @@
+[package]
+name = "tpt-pantheon-spine-wasm-sandbox"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Thin SandboxPermissions -> wasmtime/cap-std policy layer for Pantheon. SPINE §5.3."
+
+[dependencies]
+thiserror.workspace = true
+
+# The only crate in the whole workspace allowed a direct `wasmtime` dependency.
+# Everything is feature-gated so the default (policy) build stays small and the
+# real binding is opt-in. See SPINE.md §5.3.
+wasmtime = { version = "21", optional = true }
+wasmtime-wasi = { version = "21", optional = true }
+cap-std = { version = "3", optional = true, features = ["fs_utf8"] }
+
+[features]
+default = []
+# Enables the real wasmtime / cap-std binding. Keep this crate a THIN
+# translation layer — if this feature's code grows past a few hundred lines of
+# config-translation, it has drifted (spec §5.3).
+wasmtime = ["dep:wasmtime", "dep:wasmtime-wasi", "dep:cap-std"]

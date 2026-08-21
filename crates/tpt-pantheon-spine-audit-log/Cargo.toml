@@ -1,0 +1,11 @@
+[package]
+name = "tpt-pantheon-spine-audit-log"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "Shared audit sink (AuditSink::append) for Pantheon write-path logging. SPINE §5.2."
+
+[dependencies]
+thiserror.workspace = true
+sha2.workspace = true
