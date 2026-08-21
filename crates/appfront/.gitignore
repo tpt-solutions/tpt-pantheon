@@ -1,0 +1,8 @@
+/target
+target/
+/dist
+**/dist
+.trunk
+*.pdb
+.DS_Store
+/.kilo
