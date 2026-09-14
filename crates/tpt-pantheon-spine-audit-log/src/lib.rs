@@ -11,10 +11,11 @@ use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 /// Outcome of the action an [`AuditEvent`] records.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AuditOutcome {
     Allow,
     Deny,
@@ -25,7 +26,7 @@ pub enum AuditOutcome {
 ///
 /// Cloning is cheap (small owned data) so sinks can buffer/forward events
 /// without lifetime gymnastics.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AuditEvent {
     pub id: String,
     pub ts_unix_nanos: u64,
@@ -229,11 +230,7 @@ pub fn verify_chain(events: &[AuditEvent]) -> Result<(), ChainError> {
             .cloned()
             .unwrap_or_else(|| GENESIS_PREV.to_string());
         if stored_prev != prev {
-            return Err(ChainError::BrokenLink(
-                event.id.clone(),
-                prev,
-                stored_prev,
-            ));
+            return Err(ChainError::BrokenLink(event.id.clone(), prev, stored_prev));
         }
         let recomputed = chain_hash(&stored_prev, event);
         if &recomputed != stored {

@@ -1,7 +1,17 @@
 [workspace]
 resolver = "2"
-members = ["crates/*"]
-exclude = ["services/identity"]
+# Only Pantheon's own crates are workspace members. The three vendored Layer-1
+# repos (Keystone / Telos / AppFront) are kept as independent workspaces so they
+# keep their own `[workspace]` roots, versions, and `workspace = true` manifest
+# inheritance — nesting them here would break the build. They are consumed by
+# path dependency from the Milestone-1 wedge crate, not as members.
+members = ["crates/tpt-pantheon-spine-*"]
+exclude = [
+    "services/identity",
+    "crates/keystone",
+    "crates/telos",
+    "crates/appfront",
+]
 
 [workspace.package]
 version = "0.1.0"

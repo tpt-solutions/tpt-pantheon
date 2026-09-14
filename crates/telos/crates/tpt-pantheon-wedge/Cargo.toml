@@ -1,0 +1,28 @@
+[package]
+name = "tpt-pantheon-wedge"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Milestone-1 wedge: Keystone + Telos + AppFront proof for tpt-pantheon."
+publish = false
+
+# This crate intentionally lives INSIDE the tpt-telos workspace (crates/telos)
+# so it can consume `tpt-telos-sdk` natively (that SDK uses `workspace = true`
+# manifest inheritance and therefore must be used from within its own
+# workspace). It path-depends on `tpt-keystone-sdk` (a standalone crate) and on
+# `tpt-pantheon-spine-audit-log` (a member of the pantheon root workspace). Both
+# resolve cleanly across workspace boundaries.
+
+[dependencies]
+tpt-telos-sdk = { path = "../tpt-telos-sdk" }
+tpt-keystone-sdk = { path = "../../../keystone/tpt-keystone-sdk" }
+tpt-pantheon-spine-audit-log = { path = "../../../tpt-pantheon-spine-audit-log" }
+
+axum = "0.7"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }

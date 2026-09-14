@@ -194,7 +194,10 @@ pub mod wasm {
     //! adapter, not a reimplementation of sandboxing.
 
     use super::*;
-    use wasmtime::{component::Linker as ComponentLinker, Config, Engine, Linker, Store, StoreLimits, StoreLimitsBuilder};
+    use wasmtime::{
+        component::Linker as ComponentLinker, Config, Engine, Linker, Store, StoreLimits,
+        StoreLimitsBuilder,
+    };
     use wasmtime_wasi::{DirPerms, FilePerms, ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
 
     /// Host state threaded through a `wasmtime::Store`. Implements [`WasiView`]
@@ -224,7 +227,10 @@ pub mod wasm {
     }
 
     /// Build a `Store<HostData>` with fuel + memory limits and a cap-std-backed
-    /// `WasiCtx` (preopens only, no ambient authority).
+    /// `WasiCtx` (preopens only, no ambient authority). The `engine` MUST have
+    /// been configured with `consume_fuel(true)` (see [`configure_engine`]) when
+    /// `resolved.fuel` is `Some`, or the fuel budget is rejected loudly rather
+    /// than silently ignored.
     pub fn build_store(engine: &Engine, resolved: &ResolvedConfig) -> Store<HostData> {
         let mut store = Store::new(
             engine,
@@ -237,7 +243,12 @@ pub mod wasm {
             },
         );
         if let Some(fuel) = resolved.fuel {
-            store.set_fuel(fuel);
+            // set_fuel errors if the engine was not created with fuel consumption
+            // enabled. We surface that as a panic: a requested fuel budget that
+            // cannot be enforced is a config bug, not a recoverable runtime error.
+            store
+                .set_fuel(fuel)
+                .expect("engine must be configured with consume_fuel(true) to use fuel");
         }
         store.limiter(|data: &mut HostData| &mut data.limits);
         store
@@ -250,7 +261,10 @@ pub mod wasm {
         let mut builder = WasiCtxBuilder::new();
         for pre in &resolved.preopens {
             let (dir_perms, file_perms) = if pre.writable {
-                (DirPerms::READ | DirPerms::MUTATE, FilePerms::READ | FilePerms::WRITE)
+                (
+                    DirPerms::READ | DirPerms::MUTATE,
+                    FilePerms::READ | FilePerms::WRITE,
+                )
             } else {
                 (DirPerms::READ, FilePerms::READ)
             };

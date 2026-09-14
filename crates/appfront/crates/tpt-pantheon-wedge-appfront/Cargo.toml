@@ -1,0 +1,37 @@
+[package]
+name = "tpt-pantheon-wedge-appfront"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Milestone-1 AppFront (DOM) client for the Pantheon wedge: account list + transfer form wired to the wedge HTTP API."
+publish = false
+
+# This crate is `#![cfg(target_arch = "wasm32")]`: on native targets it compiles
+# to an empty crate (mirroring tpt-appfront-dom's own pattern) so the AppFront
+# workspace still builds natively. Build it for the browser with
+# `cargo build -p tpt-pantheon-wedge-appfront --target wasm32-unknown-unknown`
+# (e.g. via `trunk`). It lives inside the AppFront workspace so it can consume
+# `tpt-appfront-dom` / `tpt-appfront-core` natively (those crates use
+# `workspace = true` manifest inheritance).
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+tpt-appfront-core = { path = "../tpt-appfront-core" }
+tpt-appfront-dom = { path = "../tpt-appfront-dom" }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", features = [
+    "Document",
+    "Window",
+    "Element",
+    "Request",
+    "RequestInit",
+    "Response",
+    "Headers",
+] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+console_error_panic_hook = "0.1"

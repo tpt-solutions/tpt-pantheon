@@ -11,9 +11,10 @@ thiserror.workspace = true
 
 # The only crate in the whole workspace allowed a direct `wasmtime` dependency.
 # Everything is feature-gated so the default (policy) build stays small and the
-# real binding is opt-in. See SPINE.md §5.3.
-wasmtime = { version = "21", optional = true }
-wasmtime-wasi = { version = "21", optional = true }
+# real binding is opt-in. See SPINE.md §5.3. Pinned to the patched 24.0.x line
+# to clear the cluster of wasmtime-wasi advisories affecting 21.x.
+wasmtime = { version = "24.0.11", optional = true }
+wasmtime-wasi = { version = "24.0.11", optional = true }
 cap-std = { version = "3", optional = true, features = ["fs_utf8"] }
 
 [features]

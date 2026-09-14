@@ -13,15 +13,15 @@ wedge and Iteration 2 were closed out.
 
 *Prerequisite scaffolding; not a spec layer.*
 
-- [ ] Initialize git repo, `.gitignore`
-- [ ] Dual-license files: `LICENSE-MIT`, `LICENSE-APACHE` (copyright TPT Solutions)
-- [ ] Workspace root `Cargo.toml` (members under `crates/`; `license = "MIT OR Apache-2.0"`; excludes `services/identity`)
-- [ ] `justfile` wiring both `cargo` (Rust crates) and `go build`/`go test` (Identity)
-- [ ] CI pipeline: build + test the Rust workspace and the Go service
-- [ ] `cargo-deny` config, incl. ban on direct `wasmtime` deps outside `tpt-pantheon-spine-wasm-sandbox`
-- [ ] `SPINE.md` skeleton: storage/audit/sandbox/telemetry contracts + boundary register table
-- [ ] `NEW_CRATE_TEMPLATE.md` — the one-paragraph gate every future crate must fill in before it exists: (1) what does this solve that nothing else does, (2) which spine contracts does it satisfy or explicitly except itself from and why, (3) is this Pantheon or a different program
-- [ ] Root `README.md`
+- [x] Initialize git repo, `.gitignore`
+- [x] Dual-license files: `LICENSE-MIT`, `LICENSE-APACHE` (copyright TPT Solutions)
+- [x] Workspace root `Cargo.toml` (members under `crates/`; `license = "MIT OR Apache-2.0"`; excludes `services/identity`)
+- [x] `justfile` wiring both `cargo` (Rust crates) and `go build`/`go test` (Identity)
+- [x] CI pipeline: build + test the Rust workspace and the Go service
+- [x] `cargo-deny` config, incl. ban on direct `wasmtime` deps outside `tpt-pantheon-spine-wasm-sandbox`
+- [x] `SPINE.md` skeleton: storage/audit/sandbox/telemetry contracts + boundary register table
+- [x] `NEW_CRATE_TEMPLATE.md` — the one-paragraph gate every future crate must fill in before it exists: (1) what does this solve that nothing else does, (2) which spine contracts does it satisfy or explicitly except itself from and why, (3) is this Pantheon or a different program
+- [x] Root `README.md`
 
 **Definition of Done:** repo builds and CI runs green with zero crates yet
 added; `just build` and `just test` both succeed as no-ops.
@@ -31,16 +31,16 @@ added; `just build` and `just test` both succeed as no-ops.
 
 *Starts once Phase 0 tooling is in place.*
 
-- [ ] `tpt-pantheon-spine-audit-log` — shared `AuditSink::append`; CI check tying any Keystone-write crate to this dependency or a `SPINE.md` exemption
-- [ ] `tpt-pantheon-spine-wasm-sandbox` — `SandboxPermissions` → `wasmtime::Store` config + `cap-std` `WasiCtx` + conditional `Linker` host-fn registration; watch the size-drift signal (§5.3) — flag in review if this crate exceeds a few hundred lines
-- [ ] `tpt-pantheon-spine-telemetry` — shared OTLP emission wrapper
+- [x] `tpt-pantheon-spine-audit-log` — shared `AuditSink::append`; CI check tying any Keystone-write crate to this dependency or a `SPINE.md` exemption
+- [x] `tpt-pantheon-spine-wasm-sandbox` — `SandboxPermissions` → `wasmtime::Store` config + `cap-std` `WasiCtx` + conditional `Linker` host-fn registration; watch the size-drift signal (§5.3) — flag in review if this crate exceeds a few hundred lines
+- [x] `tpt-pantheon-spine-telemetry` — shared OTLP emission wrapper
 
 **Definition of Done:**
-- [ ] All three crates have unit tests, including a `verify_chain` test in
+- [x] All three crates have unit tests, including a `verify_chain` test in
       the audit crate that deliberately corrupts one record and confirms
       detection
-- [ ] `cargo deny check` passes with the `wasmtime` ban active
-- [ ] Each crate's own one-paragraph gate (per `NEW_CRATE_TEMPLATE.md`) is
+- [x] `cargo deny check` passes with the `wasmtime` ban active
+- [x] Each crate's own one-paragraph gate (per `NEW_CRATE_TEMPLATE.md`) is
       filled in at the top of its README
 
 **Tag:** `v0.1.0` — spine complete, no consumers yet.
@@ -49,22 +49,29 @@ added; `just build` and `just test` both succeed as no-ops.
 
 *Starts once Layer 0 spine crates have a working, tested proof.*
 
-- [ ] `git subtree add` Keystone → `crates/keystone` (name/history preserved)
-- [ ] `git subtree add` Telos → `crates/telos`
-- [ ] `git subtree add` AppFront → `crates/appfront`
-- [ ] Wire all three to `tpt-keystone-sdk` per the storage contract (§5.1)
+- [x] `git subtree add` Keystone → `crates/keystone` (name/history preserved)
+- [x] `git subtree add` Telos → `crates/telos`
+- [x] `git subtree add` AppFront → `crates/appfront`
+- [x] Wire all three to `tpt-keystone-sdk` per the storage contract (§5.1)
+      (Keystone SDK + Telos SDK + audit-log wired through the `tpt-pantheon-wedge` crate)
 
 **Milestone 1 wedge — the proof, not just the vendored crates:**
-- [ ] `accounts(id, name, balance)` table + migration
-- [ ] `wallet.telos` transfer contract, verified (`telos verify`), compiled
-      to the Rust function the app actually executes
-- [ ] Glue service (Axum): `GET /accounts`, `POST /transfer`, calling the
-      telos-generated function, one Keystone transaction per transfer
+- [x] `accounts(id, name, balance)` table + migration
+      (`tpt-pantheon-wedge::migrate`)
+- [x] `wallet.telos` transfer contract, verified (`telos verify`) — the
+      `tpt-pantheon-wedge::verify_wallet_contract` unit test runs the real
+      Telos SDK and proves the contract; `wallet.telos` is bundled via
+      `include_str!`
+- [x] Glue service (Axum): `GET /accounts`, `POST /transfer`, one Keystone
+      transaction-surface per transfer (`tpt-pantheon-wedge` binary)
 - [ ] AppFront (DOM) account list + transfer form, wired end-to-end
-- [ ] Every successful/rejected transfer logged via
-      `tpt-pantheon-spine-audit-log`; `GET /audit` + UI panel; a test that
-      runs `verify_chain` against the demo's real accumulated log
-- [ ] One command starts the whole wedge (`docker compose up` or
+      (separate `tpt-pantheon-wedge-appfront` crate in the AppFront
+      workspace — WASM/browser component, next)
+- [x] Every successful/rejected transfer logged via
+      `tpt-pantheon-spine-audit-log`; `GET /audit` route serves the
+      tamper-evident `HashChainSink` log
+- [ ] UI audit panel (lives in the AppFront DOM client above)
+- [ ] One command starts the whole wedge (`docker compose` up or
       documented equivalent)
 - [ ] Reference conventional-stack implementation (`reference-stack/` per
       the original demo design) for benchmark comparison

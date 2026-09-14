@@ -1,0 +1,13 @@
+module Wallet {
+    // Every account must stay non-negative at all times.
+    invariant Account { balance >= 0 }
+
+    // Move `amount` from `from` to `to`. The post-state of both accounts is
+    // exactly the pre-state adjusted by `amount`, and the move is only allowed
+    // when `from` can cover it.
+    func transfer(from: Account, to: Account, amount: PositiveInt)
+        requires from.balance >= amount
+        ensures from.balance == old(from.balance) - amount
+        ensures to.balance == old(to.balance) + amount
+    ;
+}

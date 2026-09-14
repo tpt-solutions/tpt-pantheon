@@ -9,10 +9,9 @@ members = [
     "crates/tpt-telos-codegen",
     "crates/tpt-telos-lsp",
     "crates/tpt-telos-cli",
-    "crates/out-telos-wasm",
     "crates/tpt-telos-sdk",
     "crates/tpt-telos-prove",
-    "crates/tpt-telos-uir-bridge",
+    "crates/tpt-pantheon-wedge",
 ]
 
 [workspace.package]

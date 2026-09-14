@@ -9,3 +9,4 @@ description = "Shared audit sink (AuditSink::append) for Pantheon write-path log
 [dependencies]
 thiserror.workspace = true
 sha2.workspace = true
+serde = { version = "1", features = ["derive"] }
